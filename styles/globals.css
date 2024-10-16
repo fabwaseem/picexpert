@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --masonary-gap: 8px;
+  }
+}
+
+@layer components {
+
+  .icon {
+    /* Base class for all icons */
+    width: 22px;
+    height: 22px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 6px;
+    flex-shrink: 0;
+    border: 2px solid #cecece;
+  }
+
+  .icon::before {
+    /* Base style for pseudo-element */
+    content: "";
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    box-shadow: inset 0 0 0 2px #7a7a7a;
+  }
+
+  .icon.sharp::before {
+    /* Sharp icon style */
+    top: 6px;
+    right: 6px;
+  }
+
+  .icon.curved::before {
+    /* Curved icon style */
+    top: 5px;
+    right: 5px;
+    border-radius: 8px;
+  }
+
+  .icon.round::before {
+    /* Round icon style */
+    top: 5px;
+    right: 5px;
+    border-radius: 14px;
+  }
+
+  .dark .icon {
+    /* Dark mode styles */
+    background: #18181b;
+    border: 2px solid #505055;
+  }
+
+  .dark .icon::before {
+    box-shadow: inset 0 0 0 2px #dbdbdb;
+  }
+
+  .my-masonry-grid {
+    display: -webkit-box;
+    /* Not needed if autoprefixing */
+    display: -ms-flexbox;
+    /* Not needed if autoprefixing */
+    display: flex;
+    margin-left: calc(-1 * var(--masonary-gap));
+    /* gutter size offset */
+    width: auto;
+  }
+
+  .my-masonry-grid_column {
+    padding-left: var(--masonary-gap);
+    /* gutter size */
+    background-clip: padding-box;
+  }
+
+  /* Style your items */
+  .my-masonry-grid_column>div {
+    /* change div to reference your elements you put in <Masonry> */
+    margin-bottom: var(--masonary-gap);
+  }
+
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0;
+    /* <-- Apparently some margin are still there even though it's hidden */
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+    /* Firefox */
+    appearance: textfield;
+  }
+}
