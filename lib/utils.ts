@@ -615,7 +615,7 @@ export const downloadZip = async (
   settings: SettingsProps,
 ) => {
   const zip = new JSZip();
-  let zipName = `picExpert.net_${settings.width}x${settings.height}`;
+  let zipName = `picExpert.net_${settings.width * settings.download.quality}x${settings.height * settings.download.quality}`;
   const folder = zip.folder(zipName);
   if (!folder) return;
 

@@ -8,17 +8,18 @@ import {
   downloadSingleImage,
   downloadZip,
   getAspectRatio,
+  isSupported,
 } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store";
+import { addFiles } from "@/store/slices/FilesSlice";
 import { updateSetting } from "@/store/slices/settingsSlice";
-import { DetailedFile, Scalling } from "@/types";
+import { DetailedFile, Scalling, SettingsProps } from "@/types";
 import { setupWorker } from "@/workers/setup";
 import {
   Button,
   Card,
   CardBody,
   Checkbox,
-  Chip,
   Divider,
   Dropdown,
   DropdownItem,
@@ -36,14 +37,13 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 import Image from "next/image";
-import { FormEvent, useEffect, useRef, useState } from "react";
-import Dropzone from "react-dropzone";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import Dropzone, { useDropzone } from "react-dropzone";
 import validateColor from "validate-color";
 import AngleSelector from "../AngleSelector";
 import DraggableWatermarkSelector from "../DraggableWatermarkSelector";
 import {
   AppMenuIcon,
-  ArrowRightRoundIcon,
   BanIcon,
   BlurIcon,
   ChevronDownIcon,
@@ -59,6 +59,7 @@ import {
   Logo,
   OpacityHighIcon,
   OpacityLowIcon,
+  PlusRoundIcon,
   RoundIcon,
   SettingIcon,
   SharpIcon,
@@ -67,8 +68,8 @@ import {
   TextIcon,
 } from "../icons";
 import ColorPicker from "./ColorPicker";
-import { GradientPicker } from "./GradientPicker";
 import FeedbackModal from "./FeedbackModal";
+import { GradientPicker } from "./GradientPicker";
 import SettingsModal from "./SettingsModal";
 
 const Sidebar = () => {
@@ -120,6 +121,40 @@ const Sidebar = () => {
   const workerRef = useRef<Worker>(null);
   const skipEffect = useRef(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const settingsRef = useRef<SettingsProps>(settings);
+
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
+
+  const onDropFiles = useCallback(
+    async (acceptedFiles: File[]) => {
+      const filesToAdd: DetailedFile[] = [];
+      for (let i = 0; i < acceptedFiles.length; i++) {
+        if (isSupported(acceptedFiles[i])) {
+          let file = await convertToDetailedFile(acceptedFiles[i]);
+          if (file) {
+            filesToAdd.push(file);
+          }
+        }
+      }
+      if (filesToAdd.length) {
+        dispatch(addFiles(filesToAdd));
+      }
+    },
+    [dispatch],
+  );
+
+  const { getInputProps: getAddFilesInputProps, open: openAddFiles } =
+    useDropzone({
+      onDrop: onDropFiles,
+      noClick: true,
+      noKeyboard: true,
+      multiple: true,
+      accept: {
+        "image/*": [".png", ".gif", ".jpeg", ".jpg", ".webp"],
+      },
+    });
 
   useEffect(
     () => setupWorker(handleDownload, setIsLoading, skipEffect, workerRef),
@@ -128,9 +163,9 @@ const Sidebar = () => {
 
   const handleDownload = async (files: DetailedFile[]) => {
     if (files.length === 1) {
-      await downloadSingleImage(files[0], settings);
+      await downloadSingleImage(files[0], settingsRef.current);
     } else {
-      await downloadZip(files, settings);
+      await downloadZip(files, settingsRef.current);
     }
   };
 
@@ -180,25 +215,33 @@ const Sidebar = () => {
         <Card>
           <CardBody className="p-2 ">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1 relative group cursor-pointer">
+              <div className="flex items-center gap-1 relative">
                 <Logo />
-                <h4 className="text-lg font-semibold opacity-50 group-hover:opacity-100 transition-opacity">
-                  picExpert
-                </h4>
-                <ArrowRightRoundIcon
-                  size={16}
-                  className="absolute left-28 opacity-0 group-hover:left-[135px] group-hover:opacity-100 transition-all"
-                />
-                <Chip
-                  radius="sm"
-                  variant="bordered"
-                  size="sm"
-                  className="group-hover:opacity-0 transition-opacity"
-                >
-                  BETA
-                </Chip>
+                <h4 className="text-lg font-semibold">picExpert</h4>
               </div>
               <div className="flex items-center">
+                {files.length > 0 && (
+                  <>
+                    <input {...getAddFilesInputProps()} />
+                    <Tooltip
+                      content="Add more images"
+                      delay={1000}
+                      showArrow
+                      radius="sm"
+                    >
+                      <Button
+                        isIconOnly
+                        color="default"
+                        aria-label="Add more images"
+                        size="sm"
+                        variant="light"
+                        onPress={openAddFiles}
+                      >
+                        <PlusRoundIcon size={20} />
+                      </Button>
+                    </Tooltip>
+                  </>
+                )}
                 <Tooltip
                   content="Send Feedback"
                   delay={1000}
@@ -211,7 +254,7 @@ const Sidebar = () => {
                     aria-label="Send Feedback"
                     size="sm"
                     variant="light"
-                    onClick={onOpenFeedbackModal}
+                    onPress={onOpenFeedbackModal}
                   >
                     <FeedbackIcon size={20} />
                   </Button>
@@ -223,7 +266,7 @@ const Sidebar = () => {
                     aria-label="Send Feedback"
                     size="sm"
                     variant="light"
-                    onClick={onOpenSettingsModal}
+                    onPress={onOpenSettingsModal}
                   >
                     <AppMenuIcon size={20} />
                   </Button>
@@ -235,7 +278,7 @@ const Sidebar = () => {
                     aria-label="Send Feedback"
                     size="sm"
                     variant="light"
-                    onClick={() => setSidebarActiveMobile(!sidebarActiveMobile)}
+                    onPress={() => setSidebarActiveMobile(!sidebarActiveMobile)}
                     className="md:hidden"
                     ref={sidebarMenuBtnRef}
                   >
@@ -1443,7 +1486,7 @@ const Sidebar = () => {
                 size="lg"
                 className="w-full"
                 variant="faded"
-                onClick={callDownload}
+                onPress={callDownload}
                 disabled={files.length === 0}
               >
                 {isLoading ? (
