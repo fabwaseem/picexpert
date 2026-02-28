@@ -15,9 +15,14 @@ const initialState: SettingsProps = {
   },
   background: {
     type: "blur",
-    solid: {
-      color: "#ffffff",
-      history: [],
+    color: {
+      mode: "solid",
+      solid: "#ffffff",
+      gradient: {
+        start: "#ffffff",
+        end: "#000000",
+        direction: 135,
+      },
     },
     blurStrength: 20,
     image: {
@@ -28,8 +33,13 @@ const initialState: SettingsProps = {
   },
   watermark: {
     enabled: false,
+    pattern: "single",
+    direction: -45,
     type: "text",
-    image: undefined,
+    image: {
+      image: undefined,
+      fit: "fit",
+    },
     text: {
       text: "picExpert",
       font: "Arial",

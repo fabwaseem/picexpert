@@ -31,10 +31,15 @@ export type SettingsProps = {
   currentUnit: "px" | "in" | "cm" | "mm";
   lockRatio: boolean;
   background: {
-    type: "solid" | "blur" | "image" | null;
-    solid: {
-      color: string;
-      history: string[];
+    type: "color" | "blur" | "image" | null;
+    color: {
+      mode: "solid" | "gradient";
+      solid: string;
+      gradient: {
+        start: string;
+        end: string;
+        direction: number;
+      };
     };
     blurStrength: number;
     image: {
@@ -51,12 +56,17 @@ export type SettingsProps = {
       | "border"
       | "glass-light"
       | "glass-dark";
-    radius: number;
+    radius: number; // 0-100
   };
   watermark: {
     enabled: boolean;
+    pattern: "single" | "repeat";
+    direction: number;
     type: "text" | "image";
-    image: DetailedFile | undefined;
+    image: {
+      image: DetailedFile | undefined;
+      fit: Scalling;
+    };
     text: {
       text: string;
       font: string;

@@ -1,21 +1,5 @@
 "use client";
-import React, { FormEvent, useEffect, useRef, useState } from "react";
-import {
-  AppMenuIcon,
-  ArrowRightRoundIcon,
-  ChevronDownIcon,
-  CropIcon,
-  DiscordIcon,
-  DownloadIcon,
-  ExpandIcon,
-  ExportSettingIcon,
-  FeedbackIcon,
-  ImageIcon,
-  Logo,
-  PlusRoundIcon,
-  SettingIcon,
-  TrancparencyIcon,
-} from "../icons";
+import { socialMediaRatios } from "@/config/socialRatios";
 import {
   calculateAspectRatio,
   calculateDimensions,
@@ -25,50 +9,67 @@ import {
   downloadZip,
   getAspectRatio,
 } from "@/lib/utils";
-import { socialMediaRatios } from "@/config/socialRatios";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  useDisclosure,
-  Checkbox,
-  Input,
-  Link,
-  ScrollShadow,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownSection,
-  DropdownItem,
-  Tabs,
-  Tab,
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Chip,
-  Tooltip,
-  Divider,
-  Slider,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@nextui-org/react";
-import FeedbackModal from "./FeedbackModal";
-import SettingsModal from "./SettingsModal";
-import Image from "next/image";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { updateSetting } from "@/store/slices/settingsSlice";
-import ColorPicker from "./ColorPicker";
-import { updateFiles } from "@/store/slices/FilesSlice";
 import { DetailedFile, Scalling } from "@/types";
 import { setupWorker } from "@/workers/setup";
+import {
+  Button,
+  Card,
+  CardBody,
+  Checkbox,
+  Chip,
+  Divider,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  ScrollShadow,
+  Slider,
+  Tab,
+  Tabs,
+  Tooltip,
+  useDisclosure,
+} from "@nextui-org/react";
+import Image from "next/image";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Dropzone from "react-dropzone";
 import validateColor from "validate-color";
+import AngleSelector from "../AngleSelector";
 import DraggableWatermarkSelector from "../DraggableWatermarkSelector";
+import {
+  AppMenuIcon,
+  ArrowRightRoundIcon,
+  BanIcon,
+  BlurIcon,
+  ChevronDownIcon,
+  CircleIcon,
+  ColorIcon,
+  CropIcon,
+  CurvedIcon,
+  DownloadIcon,
+  ExpandIcon,
+  ExportSettingIcon,
+  FeedbackIcon,
+  ImageIcon,
+  Logo,
+  OpacityHighIcon,
+  OpacityLowIcon,
+  RoundIcon,
+  SettingIcon,
+  SharpIcon,
+  SizeLargeIcon,
+  SizeSmallIcon,
+  TextIcon,
+} from "../icons";
+import ColorPicker from "./ColorPicker";
+import { GradientPicker } from "./GradientPicker";
+import FeedbackModal from "./FeedbackModal";
+import SettingsModal from "./SettingsModal";
 
 const Sidebar = () => {
   const settings = useAppSelector((state) => state.settings);
@@ -88,7 +89,7 @@ const Sidebar = () => {
     useState<string>("custom");
   const [selectedRatio, setSelectedRatio] = useState(
     socialMediaRatios.find((item) => item.id === selectSocialRatioTab)
-      ?.ratios[0]
+      ?.ratios[0],
   );
   const [sidebarActiveMobile, setSidebarActiveMobile] =
     useState<boolean>(false);
@@ -104,10 +105,16 @@ const Sidebar = () => {
   } = useDisclosure();
 
   const [currentBgColor, setCurrentBgColor] = useState(
-    settings.background.solid.color
+    settings.background.color.solid,
+  );
+  const [gradientStart, setGradientStart] = useState(
+    settings.background.color.gradient.start,
+  );
+  const [gradientEnd, setGradientEnd] = useState(
+    settings.background.color.gradient.end,
   );
   const [currentRoundness, setCurrentRoundness] = useState(
-    settings.border.radius
+    settings.border.radius,
   );
 
   const workerRef = useRef<Worker>(null);
@@ -116,7 +123,7 @@ const Sidebar = () => {
 
   useEffect(
     () => setupWorker(handleDownload, setIsLoading, skipEffect, workerRef),
-    []
+    [],
   );
 
   const handleDownload = async (files: DetailedFile[]) => {
@@ -153,13 +160,13 @@ const Sidebar = () => {
         width: customDimentions.width,
         height: customDimentions.height,
         aspectRatio: selectedRatio?.ratio,
-      })
+      }),
     );
     setIsOpenSocialSizeDropdown(false);
     setSelectedRatio({
       label: `Custom - ${getAspectRatio(
         customDimentions.width,
-        customDimentions.height
+        customDimentions.height,
       )}`,
       width: customDimentions.width,
       height: customDimentions.height,
@@ -242,7 +249,7 @@ const Sidebar = () => {
         <Card
           className={cn(
             "flex-1 max-md:fixed  max-md:bottom-1  max-md:left-1  max-md:w-[calc(100%-8px)] transition-transform max-md:z-20",
-            sidebarActiveMobile ? "translate-y-0" : "max-md:translate-y-full"
+            sidebarActiveMobile ? "translate-y-0" : "max-md:translate-y-full",
           )}
           ref={sidebarMenuRef}
         >
@@ -255,7 +262,7 @@ const Sidebar = () => {
                   dispatch(
                     updateSetting({
                       mode: key as "expand" | "crop",
-                    })
+                    }),
                   );
                 }
               }}
@@ -327,7 +334,7 @@ const Sidebar = () => {
                     size={14}
                     className={cn(
                       "opacity-50 transition-transform ",
-                      isOpenSocialSizeDropdown ? "transform rotate-180" : ""
+                      isOpenSocialSizeDropdown ? "transform rotate-180" : "",
                     )}
                   />
                 </Button>
@@ -488,7 +495,7 @@ const Sidebar = () => {
                               "flex flex-col items-stretch p-3 rounded-xl  bg-content2/50 hover:bg-content2/75 transition-colors ",
                               selectedRatio?.label === ratio.label
                                 ? "bg-content2/100 outline outline-1 outline-offset-3"
-                                : ""
+                                : "",
                             )}
                             onClick={() => {
                               setSelectedRatio(ratio);
@@ -498,7 +505,7 @@ const Sidebar = () => {
                                   width: ratio.width,
                                   height: ratio.height,
                                   aspectRatio: ratio.ratio,
-                                })
+                                }),
                               );
                             }}
                           >
@@ -542,7 +549,7 @@ const Sidebar = () => {
                         dispatch(
                           updateSetting({
                             customCrop: value,
-                          })
+                          }),
                         )
                       }
                       className="mt-1"
@@ -560,347 +567,394 @@ const Sidebar = () => {
                     <h6 className="font-semibold text-2xs uppercase opacity-50 tracking-wider">
                       background
                     </h6>
-                    <div className="grid grid-cols-3 gap-1.5 mt-2">
-                      <Popover placement="bottom-start">
-                        <PopoverTrigger>
-                          <button
-                            className={cn(
-                              "tracking-[-.6px] text-2xs rounded-lg flex flex-col gap-1.5  items-center justify-center dark:bg-background bg-content2 outline outline-1 outline-white/0 transition-all aspect-[4/3]  p-2 cursor-pointer",
-                              settings.background.type === "blur" &&
-                                "outline-white/100 outline-offset-3"
-                            )}
-                          >
-                            <div className="bg-white flex items-center justify-center rounded-full">
-                              <TrancparencyIcon />
-                            </div>
-                            Blur
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent className="bg-content2">
-                          <div className="py-2 w-[250px] ">
-                            <div>
-                              <h6 className="font-semibold text-2xs uppercase opacity-50 tracking-wider">
-                                blur strength
-                              </h6>
-                              <Slider
-                                maxValue={100}
-                                minValue={0}
-                                showTooltip={true}
-                                size="sm"
-                                aria-label="blur strength"
-                                defaultValue={settings.background.blurStrength}
-                                onChangeEnd={(value) =>
-                                  dispatch(
-                                    updateSetting({
-                                      background: {
-                                        ...settings.background,
-                                        blurStrength: value as number,
-                                        type: "blur",
-                                      },
-                                    })
-                                  )
-                                }
-                                startContent={
-                                  <div className="w-6 h-6 flex items-center justify-center">
-                                    <div className="icon flex items-center justify-center w-4 h-4"></div>
-                                  </div>
-                                }
-                                endContent={
-                                  <div className="w-6 h-6 flex items-center justify-center">
-                                    <div className="icon flex items-center justify-center "></div>
-                                  </div>
-                                }
-                              />
-                            </div>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                      <Popover
-                        placement="bottom-start"
-                        onClose={() => {
-                          const lastColorInHistory =
-                            settings.background.solid.history[
-                              settings.background.solid.history.length - 1
-                            ];
-                          if (
-                            lastColorInHistory ===
-                              settings.background.solid.color ||
-                            settings.background.type !== "solid"
+                    <div className="grid grid-cols-3 gap-1.5 mt-2 p-1">
+                      <button
+                        className={cn(
+                          "tracking-[-.6px] text-2xs rounded-lg flex flex-col gap-1.5  items-center justify-center dark:bg-background bg-content2 outline outline-1 outline-white/0 transition-all aspect-[4/3]  p-2 cursor-pointer",
+                          settings.background.type === "blur" &&
+                            "outline-white/100 outline-offset-3",
+                        )}
+                        onClick={() =>
+                          dispatch(
+                            updateSetting({
+                              background: {
+                                ...settings.background,
+                                type: "blur",
+                              },
+                            }),
                           )
-                            return;
-                          const validColor = validateColor(
-                            settings.background.solid.color
-                          );
-                          validColor &&
+                        }
+                      >
+                        <div className=" flex items-center justify-center rounded-full">
+                          <BlurIcon />
+                        </div>
+                        Blur
+                      </button>
+
+                      <button
+                        className={cn(
+                          "tracking-[-.6px] text-2xs rounded-lg flex flex-col gap-1.5  items-center justify-center dark:bg-background bg-content2 outline outline-1 outline-white/0 transition-all aspect-[4/3]  p-2 cursor-pointer ",
+                          settings.background.type === "color" &&
+                            "outline-white/100 outline-offset-3",
+                        )}
+                        onClick={() =>
+                          dispatch(
+                            updateSetting({
+                              background: {
+                                ...settings.background,
+                                type: "color",
+                              },
+                            }),
+                          )
+                        }
+                      >
+                        <div className="flex items-center justify-center rounded-full">
+                          <ColorIcon />
+                        </div>
+                        Color
+                      </button>
+
+                      <button
+                        className={cn(
+                          "tracking-[-.6px] text-2xs rounded-lg flex flex-col gap-1.5  items-center justify-center dark:bg-background bg-content2 outline outline-1 outline-white/0 transition-all aspect-[4/3]  p-2 cursor-pointer ",
+                          settings.background.type === "image" &&
+                            "outline-white/100 outline-offset-3",
+                        )}
+                        onClick={() =>
+                          dispatch(
+                            updateSetting({
+                              background: {
+                                ...settings.background,
+                                type: "image",
+                              },
+                            }),
+                          )
+                        }
+                      >
+                        <div className="w-6 h-6 relative flex items-center justify-center">
+                          {settings.background.image.image ? (
+                            <Image
+                              src={
+                                settings.background.image.image?.previewUrl + ""
+                              }
+                              alt={
+                                settings.background.image.image?.baseName + ""
+                              }
+                              fill
+                              sizes="200px"
+                              className="object-cover rounded"
+                            />
+                          ) : (
+                            <ImageIcon />
+                          )}
+                        </div>
+                        Image
+                      </button>
+                    </div>
+
+                    {settings.background.type === "blur" && (
+                      <div className="mt-4 p-1">
+                        <h6 className="font-semibold text-2xs uppercase opacity-50 tracking-wider mb-2">
+                          blur strength
+                        </h6>
+                        <Slider
+                          maxValue={100}
+                          minValue={0}
+                          showTooltip={true}
+                          size="sm"
+                          aria-label="blur strength"
+                          defaultValue={settings.background.blurStrength}
+                          onChangeEnd={(value) =>
                             dispatch(
                               updateSetting({
                                 background: {
                                   ...settings.background,
-                                  solid: {
-                                    ...settings.background.solid,
-                                    history: [
-                                      ...settings.background.solid.history,
-                                      settings.background.solid.color,
-                                    ],
+                                  blurStrength: value as number,
+                                  type: "blur",
+                                },
+                              }),
+                            )
+                          }
+                          startContent={
+                            <div className="w-6 h-6 flex items-center justify-center">
+                              <CircleIcon size={16} />
+                            </div>
+                          }
+                          endContent={
+                            <div className="w-6 h-6 flex items-center justify-center">
+                              <BlurIcon size={20} />
+                            </div>
+                          }
+                        />
+                      </div>
+                    )}
+
+                    {settings.background.type === "color" && (
+                      <div className="mt-4 p-1 space-y-4">
+                        <Tabs
+                          aria-label="Color Mode"
+                          fullWidth
+                          size="sm"
+                          selectedKey={settings.background.color.mode}
+                          onSelectionChange={(key) =>
+                            dispatch(
+                              updateSetting({
+                                background: {
+                                  ...settings.background,
+                                  color: {
+                                    ...settings.background.color,
+                                    mode: key as "solid" | "gradient",
                                   },
                                 },
-                              })
-                            );
-                        }}
-                      >
-                        <PopoverTrigger>
-                          <button
-                            className={cn(
-                              "tracking-[-.6px] text-2xs rounded-lg flex flex-col gap-1.5  items-center justify-center dark:bg-background bg-content2 outline outline-1 outline-white/0 transition-all aspect-[4/3]  p-2 cursor-pointer ",
-                              settings.background.type === "solid" &&
-                                "outline-white/100 outline-offset-3"
-                            )}
-                          >
-                            <div
-                              className="w-6 h-6 rounded-full border border-white/20"
-                              style={{
-                                backgroundColor:
-                                  settings.background.solid.color,
+                              }),
+                            )
+                          }
+                        >
+                          <Tab key="solid" title="Solid" />
+                          <Tab key="gradient" title="Gradient" />
+                        </Tabs>
+
+                        {settings.background.color.mode === "solid" && (
+                          <div>
+                            <h6 className="font-semibold text-2xs uppercase opacity-50 tracking-wider mb-2">
+                              Color
+                            </h6>
+                            <ColorPicker
+                              inputId="bg-color"
+                              value={currentBgColor}
+                              label="Color"
+                              onChange={(value) => {
+                                setCurrentBgColor(value);
                               }}
-                            ></div>
-                            {settings.background.solid.color}
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent className="bg-content2">
-                          <div className="py-2 w-[250px] space-y-2">
+                              onChangeEnd={(value) => {
+                                const validColor = validateColor(value);
+                                validColor &&
+                                  dispatch(
+                                    updateSetting({
+                                      background: {
+                                        ...settings.background,
+                                        color: {
+                                          ...settings.background.color,
+                                          solid: value,
+                                        },
+                                      },
+                                    }),
+                                  );
+                              }}
+                            />
+                          </div>
+                        )}
+
+                        {settings.background.color.mode === "gradient" && (
+                          <div className="space-y-4">
                             <div>
-                              <h6 className="font-semibold text-2xs uppercase opacity-50 tracking-wider">
-                                Color
+                              <h6 className="font-semibold text-2xs uppercase opacity-50 tracking-wider mb-2">
+                                Gradient
                               </h6>
-                              <Input
-                                id="bg-color"
-                                type="text"
-                                aria-label="color"
-                                variant="bordered"
-                                value={currentBgColor}
-                                placeholder="Color"
-                                onValueChange={(value) => {
-                                  setCurrentBgColor(value);
+                              <GradientPicker
+                                startColor={gradientStart}
+                                endColor={gradientEnd}
+                                onStartChange={setGradientStart}
+                                onEndChange={setGradientEnd}
+                                onStartChangeEnd={(value) => {
                                   const validColor = validateColor(value);
                                   validColor &&
                                     dispatch(
                                       updateSetting({
                                         background: {
                                           ...settings.background,
-                                          solid: {
-                                            ...settings.background.solid,
-                                            color: value,
+                                          color: {
+                                            ...settings.background.color,
+                                            gradient: {
+                                              ...settings.background.color
+                                                .gradient,
+                                              start: value,
+                                            },
                                           },
-                                          type: "solid",
                                         },
-                                      })
+                                      }),
+                                    );
+                                }}
+                                onEndChangeEnd={(value) => {
+                                  const validColor = validateColor(value);
+                                  validColor &&
+                                    dispatch(
+                                      updateSetting({
+                                        background: {
+                                          ...settings.background,
+                                          color: {
+                                            ...settings.background.color,
+                                            gradient: {
+                                              ...settings.background.color
+                                                .gradient,
+                                              end: value,
+                                            },
+                                          },
+                                        },
+                                      }),
                                     );
                                 }}
                               />
                             </div>
                             <div>
-                              {" "}
-                              <h6 className="font-semibold text-2xs uppercase opacity-50 tracking-wider">
-                                Recent
+                              <h6 className="font-semibold text-2xs uppercase opacity-50 tracking-wider mb-2">
+                                Direction
                               </h6>
-                              {settings.background.solid.history.length > 0 ? (
-                                <div className="flex gap-1 flex-wrap">
-                                  {settings.background.solid.history.map(
-                                    (color, index) => (
-                                      <button
-                                        key={index}
-                                        className="w-6 h-6 rounded-full border border-white/20"
-                                        style={{
-                                          backgroundColor: color,
-                                        }}
-                                        onClick={() =>
-                                          dispatch(
-                                            updateSetting({
-                                              background: {
-                                                ...settings.background,
-                                                solid: {
-                                                  ...settings.background.solid,
-                                                  color: color,
-                                                },
-                                                type: "solid",
-                                              },
-                                            })
-                                          )
-                                        }
-                                      ></button>
-                                    )
-                                  )}
-                                </div>
-                              ) : (
-                                <p className="opacity-50 text-xs">
-                                  No recent used colors
-                                </p>
-                              )}
+                              <AngleSelector
+                                angle={
+                                  settings.background.color.gradient.direction
+                                }
+                                setAngle={(angle) =>
+                                  dispatch(
+                                    updateSetting({
+                                      background: {
+                                        ...settings.background,
+                                        color: {
+                                          ...settings.background.color,
+                                          gradient: {
+                                            ...settings.background.color
+                                              .gradient,
+                                            direction: angle,
+                                          },
+                                        },
+                                      },
+                                    }),
+                                  )
+                                }
+                                label="Direction"
+                              />
                             </div>
                           </div>
-                        </PopoverContent>
-                      </Popover>
-                      <Popover placement="bottom-start">
-                        <PopoverTrigger>
-                          <button
-                            className={cn(
-                              "tracking-[-.6px] text-2xs rounded-lg flex flex-col gap-1.5  items-center justify-center dark:bg-background bg-content2 outline outline-1 outline-white/0 transition-all aspect-[4/3]  p-2 cursor-pointer ",
-                              settings.background.type === "image" &&
-                                "outline-white/100 outline-offset-3"
-                            )}
-                          >
-                            <div className="w-6 h-6 relative">
-                              {settings.background.type === "image" ? (
-                                <Image
-                                  src={
-                                    settings.background.image.image
-                                      ?.previewUrl + ""
-                                  }
-                                  alt={
-                                    settings.background.image.image?.baseName +
-                                    ""
-                                  }
-                                  fill
-                                  sizes="200px"
-                                  className="object-cover rounded"
-                                />
-                              ) : (
-                                <ImageIcon />
-                              )}
-                            </div>
-                            Image
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent className="bg-content2">
-                          <div className="py-2 w-[250px] space-y-2">
-                            <Dropzone
-                              onDrop={async (acceptedFiles) => {
-                                const image = await convertToDetailedFile(
-                                  acceptedFiles[0]
-                                );
+                        )}
+                      </div>
+                    )}
 
-                                image &&
+                    {settings.background.type === "image" && (
+                      <div className="mt-4 p-1 space-y-4">
+                        <Dropzone
+                          onDrop={async (acceptedFiles) => {
+                            const image = await convertToDetailedFile(
+                              acceptedFiles[0],
+                            );
+
+                            image &&
+                              dispatch(
+                                updateSetting({
+                                  background: {
+                                    ...settings.background,
+                                    image: {
+                                      ...settings.background.image,
+                                      image,
+                                      history: [
+                                        image,
+                                        ...settings.background.image.history,
+                                      ].slice(0, 4),
+                                    },
+                                    type: "image",
+                                  },
+                                }),
+                              );
+                          }}
+                        >
+                          {({ getRootProps, getInputProps }) => (
+                            <section>
+                              <div {...getRootProps()}>
+                                <input {...getInputProps()} />
+                                <div className="h-full w-full flex justify-center items-center">
+                                  <Card className="w-full aspect-[4/3] group cursor-pointer bg-content2 border-dashed border-2 border-default-300">
+                                    <CardBody className="flex flex-col items-center justify-center p-4">
+                                      <ImageIcon className="w-8 h-8 opacity-50 mb-2" />
+                                      <h3 className="text-sm font-semibold text-center">
+                                        Choose Image
+                                      </h3>
+                                      <p className="text-xs opacity-50 text-center mt-1">
+                                        or drag it here
+                                      </p>
+                                    </CardBody>
+                                  </Card>
+                                </div>
+                              </div>
+                            </section>
+                          )}
+                        </Dropzone>
+
+                        <div className="flex gap-2 bg-content2 p-1 rounded-lg">
+                          {(["fit", "fill", "stretch", "repeat"] as const).map(
+                            (fit, index) => (
+                              <button
+                                key={index}
+                                className={cn(
+                                  "flex-1 rounded-md text-xs py-1.5 transition-all capitalize",
+                                  settings.background.image.fit === fit
+                                    ? "bg-background shadow-sm font-semibold"
+                                    : "opacity-60 hover:opacity-100",
+                                )}
+                                onClick={() =>
                                   dispatch(
                                     updateSetting({
                                       background: {
                                         ...settings.background,
                                         image: {
                                           ...settings.background.image,
-                                          image,
-                                          history: [
-                                            ...settings.background.image
-                                              .history,
-                                            image,
-                                          ],
+                                          fit: fit as Scalling,
                                         },
                                         type: "image",
                                       },
-                                    })
-                                  );
-                              }}
-                            >
-                              {({ getRootProps, getInputProps }) => (
-                                <section>
-                                  <div {...getRootProps()}>
-                                    <input {...getInputProps()} />
-                                    <div className="h-full w-full flex justify-center items-center">
-                                      <Card className="w-full max-w-2xl aspect-[4/3] group cursor-pointer">
-                                        <CardBody className="flex flex-col items-center justify-center ">
-                                          <ImageIcon className="group-hover:hidden max-md:hidden" />
-                                          <PlusRoundIcon className="md:hidden group-hover:block" />
-                                          <h3 className="text-lg text-center mt-2">
-                                            Choose Images
-                                          </h3>
-                                          <p className="text-2xs font-semibold opacity-50">
-                                            or drag it here
-                                          </p>
-                                        </CardBody>
-                                      </Card>
-                                    </div>
-                                  </div>
-                                </section>
-                              )}
-                            </Dropzone>
-                            {settings.background.type === "image" && (
-                              <div className="flex">
-                                {["fit", "fill", "stretch", "repeat"].map(
-                                  (fit, index) => (
-                                    <button
-                                      key={index}
-                                      className={cn(
-                                        "w-full rounded-lg text-2xs  flex items-center justify-center dark:bg-background bg-content2 outline outline-1 outline-white/0 transition-all aspect-[4/3]  p-2 cursor-pointer",
-                                        settings.background.image.fit === fit &&
-                                          "outline-white/100 outline-offset-3"
-                                      )}
-                                      onClick={() =>
-                                        dispatch(
-                                          updateSetting({
-                                            background: {
-                                              ...settings.background,
-                                              image: {
-                                                ...settings.background.image,
-                                                fit: fit as Scalling,
-                                              },
-                                              type: "image",
-                                            },
-                                          })
-                                        )
-                                      }
-                                    >
-                                      {fit}
-                                    </button>
+                                    }),
                                   )
-                                )}
-                              </div>
-                            )}
-                            <div>
-                              {" "}
-                              <h6 className="font-semibold text-2xs uppercase opacity-50 tracking-wider">
-                                Recent
-                              </h6>
-                              {settings.background.image.history.length > 0 ? (
-                                <div className="flex gap-1">
-                                  {settings.background.image.history.map(
-                                    (image, index) => (
-                                      <div
-                                        key={index}
-                                        className="w-6 h-6 relative cursor-pointer"
-                                        onClick={() =>
-                                          dispatch(
-                                            updateSetting({
-                                              background: {
-                                                ...settings.background,
-                                                image: {
-                                                  ...settings.background.image,
-                                                  image,
-                                                },
-                                                type: "image",
-                                              },
-                                            })
-                                          )
-                                        }
-                                      >
-                                        <Image
-                                          src={image.previewUrl + ""}
-                                          alt={image.baseName + ""}
-                                          fill
-                                          sizes="200px"
-                                          className="object-cover rounded"
-                                        />
-                                      </div>
-                                    )
-                                  )}
-                                </div>
-                              ) : (
-                                <p className="opacity-50 text-xs">
-                                  No recent used images
-                                </p>
+                                }
+                              >
+                                {fit}
+                              </button>
+                            ),
+                          )}
+                        </div>
+
+                        <div>
+                          <h6 className="font-semibold text-2xs uppercase opacity-50 tracking-wider mb-2">
+                            Recent
+                          </h6>
+                          {settings.background.image.history.length > 0 ? (
+                            <div className="grid grid-cols-4 gap-2">
+                              {settings.background.image.history.map(
+                                (image, index) => (
+                                  <button
+                                    key={index}
+                                    className="relative aspect-square w-full rounded-md overflow-hidden border border-default-200"
+                                    onClick={() =>
+                                      dispatch(
+                                        updateSetting({
+                                          background: {
+                                            ...settings.background,
+                                            image: {
+                                              ...settings.background.image,
+                                              image: image,
+                                            },
+                                            type: "image",
+                                          },
+                                        }),
+                                      )
+                                    }
+                                  >
+                                    <Image
+                                      src={image.previewUrl}
+                                      alt="history"
+                                      fill
+                                      className="object-cover"
+                                      sizes="48px"
+                                    />
+                                  </button>
+                                ),
                               )}
                             </div>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
+                          ) : (
+                            <p className="opacity-50 text-xs">
+                              No recent images
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
                 <div>
@@ -915,7 +969,7 @@ const Sidebar = () => {
                         settings.watermark.enabled &&
                           settings.watermark.type === "text"
                           ? "bg-content1"
-                          : "hover:bg-content1/50"
+                          : "hover:bg-content1/50",
                       )}
                       onClick={() =>
                         dispatch(
@@ -925,18 +979,18 @@ const Sidebar = () => {
                               enabled: true,
                               type: "text",
                             },
-                          })
+                          }),
                         )
                       }
                     >
-                      <div className="icon sharp" />
+                      <TextIcon size={28} />
                       <p
                         className={cn(
                           "text-3xs uppercase tracking-wider",
                           settings.watermark.enabled &&
                             settings.watermark.type === "text"
                             ? "opacity-100"
-                            : "opacity-50"
+                            : "opacity-50",
                         )}
                       >
                         Text
@@ -948,7 +1002,7 @@ const Sidebar = () => {
                         settings.watermark.enabled &&
                           settings.watermark.type === "image"
                           ? "bg-content1"
-                          : "hover:bg-content1/50"
+                          : "hover:bg-content1/50",
                       )}
                       onClick={() =>
                         dispatch(
@@ -958,18 +1012,18 @@ const Sidebar = () => {
                               enabled: true,
                               type: "image",
                             },
-                          })
+                          }),
                         )
                       }
                     >
-                      <div className="icon sharp" />
+                      <ImageIcon size={28} />
                       <p
                         className={cn(
                           "text-3xs uppercase tracking-wider",
                           settings.watermark.enabled &&
                             settings.watermark.type === "image"
                             ? "opacity-100"
-                            : "opacity-50"
+                            : "opacity-50",
                         )}
                       >
                         Image
@@ -980,7 +1034,7 @@ const Sidebar = () => {
                         "flex items-center justify-center max-md:h-20 md:max-md:h-20 md:aspect-[4/3]  rounded-md flex-col gap-2 cursor-pointer",
                         !settings.watermark.enabled
                           ? "bg-content1"
-                          : "hover:bg-content1/50"
+                          : "hover:bg-content1/50",
                       )}
                       onClick={() =>
                         dispatch(
@@ -989,17 +1043,17 @@ const Sidebar = () => {
                               ...settings.watermark,
                               enabled: false,
                             },
-                          })
+                          }),
                         )
                       }
                     >
-                      <div className="icon sharp" />
+                      <BanIcon size={28} />
                       <p
                         className={cn(
                           "text-3xs uppercase tracking-wider",
                           !settings.watermark.enabled
                             ? "opacity-100"
-                            : "opacity-50"
+                            : "opacity-50",
                         )}
                       >
                         None
@@ -1007,52 +1061,118 @@ const Sidebar = () => {
                     </div>
                   </div>
 
+                  {settings.watermark.enabled && (
+                    <div className="mt-4 mb-2">
+                      <Tabs
+                        aria-label="Watermark Pattern"
+                        fullWidth
+                        size="sm"
+                        selectedKey={settings.watermark.pattern || "single"}
+                        onSelectionChange={(key) =>
+                          dispatch(
+                            updateSetting({
+                              watermark: {
+                                ...settings.watermark,
+                                pattern: key as "single" | "repeat",
+                              },
+                            }),
+                          )
+                        }
+                      >
+                        <Tab key="single" title="Single" />
+                        <Tab key="repeat" title="Repeat" />
+                      </Tabs>
+                    </div>
+                  )}
+
+                  {settings.watermark.enabled &&
+                    settings.watermark.pattern === "repeat" && (
+                      <AngleSelector
+                        angle={settings.watermark.direction}
+                        setAngle={(angle) =>
+                          dispatch(
+                            updateSetting({
+                              watermark: {
+                                ...settings.watermark,
+                                direction: angle,
+                              },
+                            }),
+                          )
+                        }
+                        label="Rotation"
+                      />
+                    )}
+
                   {settings.watermark.enabled &&
                     settings.watermark.type === "image" && (
-                      <label
-                        htmlFor="watermarkImage"
-                        className="mt-2 cursor-pointer relative w-full inline-flex tap-highlight-transparent shadow-sm px-3 bg-default-100 hover:bg-default-200  min-h-10 rounded-small flex-col items-start justify-center gap-0 transition-background motion-reduce:transition-none !duration-150 outline-none group-data-[focus-visible=true]:z-10 group-data-[focus-visible=true]:ring-2 h-14 py-2 is-filled"
-                      >
-                        <label
-                          htmlFor="watermarkImage"
-                          className="absolute z-10 pointer-events-none origin-top-left rtl:origin-top-right subpixel-antialiased block cursor-text will-change-auto !duration-200 !ease-out motion-reduce:transition-none transition-[transform,color,left,opacity] text-default-600  scale-85 text-small -translate-y-[calc(50%_+_theme(fontSize.small)/2_-_6px)] pe-2 max-w-full text-ellipsis overflow-hidden"
-                        >
-                          Watermark Image
-                        </label>
-                        <p className="w-full font-normal bg-transparent  text-small text-default-foreground is-filled mt-5 line-clamp-1">
-                          {settings.watermark.image
-                            ? settings.watermark.image.baseName
-                            : "Choose Image"}
-                        </p>
-                        <input
-                          id="watermarkImage"
-                          type="file"
-                          aria-label="watermark image"
-                          placeholder="Watermark Image URL"
-                          className="hidden"
-                          onChange={async (e) => {
-                            if (e.target.files) {
-                              const file = await convertToDetailedFile(
-                                e.target.files[0]
-                              );
-                              file &&
-                                dispatch(
-                                  updateSetting({
-                                    watermark: {
-                                      ...settings.watermark,
-                                      image: file,
+                      <div className="mt-4 p-1 space-y-4">
+                        <Dropzone
+                          onDrop={async (acceptedFiles) => {
+                            const image = await convertToDetailedFile(
+                              acceptedFiles[0],
+                            );
+                            image &&
+                              dispatch(
+                                updateSetting({
+                                  watermark: {
+                                    ...settings.watermark,
+                                    image: {
+                                      ...settings.watermark.image,
+                                      image: image,
                                     },
-                                  })
-                                );
-                            }
+                                  },
+                                }),
+                              );
                           }}
-                          accept="image/*"
-                        />
-                      </label>
+                        >
+                          {({ getRootProps, getInputProps }) => (
+                            <section>
+                              <div {...getRootProps()}>
+                                <input {...getInputProps()} />
+                                <div className="h-full w-full flex justify-center items-center">
+                                  <Card className="w-full aspect-[4/3] group cursor-pointer bg-content2 border-dashed border-2 border-default-300">
+                                    <CardBody className="flex flex-col items-center justify-center p-4 overflow-hidden">
+                                      {settings.watermark.image.image ? (
+                                        <div className="relative w-full h-full flex items-center justify-center">
+                                          <Image
+                                            src={
+                                              settings.watermark.image.image
+                                                .previewUrl
+                                            }
+                                            alt={
+                                              settings.watermark.image.image
+                                                .baseName
+                                            }
+                                            fill
+                                            className="object-contain"
+                                          />
+                                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold z-10">
+                                            Change Image
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <>
+                                          <ImageIcon className="w-8 h-8 opacity-50 mb-2" />
+                                          <h3 className="text-sm font-semibold text-center">
+                                            Choose Image
+                                          </h3>
+                                          <p className="text-xs opacity-50 text-center mt-1">
+                                            or drag it here
+                                          </p>
+                                        </>
+                                      )}
+                                    </CardBody>
+                                  </Card>
+                                </div>
+                              </div>
+                            </section>
+                          )}
+                        </Dropzone>
+                      </div>
                     )}
                   {settings.watermark.enabled &&
                     settings.watermark.type === "text" && (
-                      <div className="mt-2">
+                      <div className="mt-2 space-y-2">
                         <Input
                           id="watermarkText"
                           type="text"
@@ -1069,11 +1189,29 @@ const Sidebar = () => {
                                     text: value,
                                   },
                                 },
-                              })
+                              }),
                             )
                           }
                           radius="sm"
                           label="Text"
+                        />
+                        <ColorPicker
+                          inputId="watermarkTextColor"
+                          value={settings.watermark.text.color}
+                          onChange={(value) =>
+                            dispatch(
+                              updateSetting({
+                                watermark: {
+                                  ...settings.watermark,
+                                  text: {
+                                    ...settings.watermark.text,
+                                    color: value,
+                                  },
+                                },
+                              }),
+                            )
+                          }
+                          label="Text Color"
                         />
                       </div>
                     )}
@@ -1081,6 +1219,9 @@ const Sidebar = () => {
                   {settings.watermark.enabled && (
                     <>
                       <div className="mt-2">
+                        <p className="font-semibold text-2xs uppercase opacity-50 tracking-wider mb-2">
+                          Opacity
+                        </p>
                         <Slider
                           maxValue={1}
                           step={0.1}
@@ -1099,22 +1240,31 @@ const Sidebar = () => {
                                   ...settings.watermark,
                                   opacity: value as number,
                                 },
-                              })
+                              }),
                             )
                           }
                           startContent={
                             <div className="w-6 h-6 flex items-center justify-center">
-                              <div className="icon flex items-center justify-center w-4 h-4"></div>
+                              <OpacityLowIcon
+                                className="opacity-50"
+                                size={20}
+                              />
                             </div>
                           }
                           endContent={
                             <div className="w-6 h-6 flex items-center justify-center">
-                              <div className="icon flex items-center justify-center "></div>
+                              <OpacityHighIcon
+                                className="opacity-50"
+                                size={20}
+                              />
                             </div>
                           }
                         />
                       </div>
                       <div className="mt-4">
+                        <p className="font-semibold text-2xs uppercase opacity-50 tracking-wider mb-2">
+                          Size
+                        </p>
                         <Slider
                           maxValue={100}
                           minValue={5}
@@ -1129,22 +1279,24 @@ const Sidebar = () => {
                                   ...settings.watermark,
                                   size: value as number,
                                 },
-                              })
+                              }),
                             )
                           }
                           startContent={
                             <div className="w-6 h-6 flex items-center justify-center">
-                              <div className="icon flex items-center justify-center w-4 h-4"></div>
+                              <SizeSmallIcon className="opacity-50" size={20} />
                             </div>
                           }
                           endContent={
                             <div className="w-6 h-6 flex items-center justify-center">
-                              <div className="icon flex items-center justify-center "></div>
+                              <SizeLargeIcon className="opacity-50" size={20} />
                             </div>
                           }
                         />
                       </div>
-                      <DraggableWatermarkSelector />
+                      {settings.watermark.pattern !== "repeat" && (
+                        <DraggableWatermarkSelector />
+                      )}
                     </>
                   )}
                 </div>
@@ -1205,10 +1357,11 @@ const Sidebar = () => {
                   </h6>
                   <div className="mt-2">
                     <Slider
-                      maxValue={50}
+                      maxValue={100}
                       minValue={0}
                       showTooltip={true}
                       size="sm"
+                      getValue={(v) => `${v}%`}
                       aria-label="border radius"
                       value={currentRoundness}
                       onChange={(value) => setCurrentRoundness(value as number)}
@@ -1219,11 +1372,15 @@ const Sidebar = () => {
                               ...settings.border,
                               radius: value as number,
                             },
-                          })
+                          }),
                         )
                       }
-                      startContent={<div className="icon sharp" />}
-                      endContent={<div className="icon round" />}
+                      startContent={
+                        <SharpIcon size={18} className="opacity-50" />
+                      }
+                      endContent={
+                        <RoundIcon size={18} className="opacity-50" />
+                      }
                     />
                   </div>
                   <div className="dark:bg-background bg-content2 p-1 grid grid-cols-3 rounded-lg mt-4 gap-1">
@@ -1231,17 +1388,17 @@ const Sidebar = () => {
                       {
                         label: "Sharp",
                         value: 0,
-                        icon: "sharp",
+                        icon: <SharpIcon size={28} />,
                       },
                       {
                         label: "Curved",
-                        value: 10,
-                        icon: "curved",
+                        value: 30,
+                        icon: <CurvedIcon size={28} />,
                       },
                       {
                         label: "Round",
-                        value: 20,
-                        icon: "round",
+                        value: 100,
+                        icon: <RoundIcon size={28} />,
                       },
                     ].map((item, index) => (
                       <div
@@ -1250,7 +1407,7 @@ const Sidebar = () => {
                           "flex items-center justify-center max-md:h-20 md:aspect-[4/3]  rounded-md flex-col gap-2 cursor-pointer",
                           settings.border.radius === item.value
                             ? "bg-content1"
-                            : "hover:bg-content1/50"
+                            : "hover:bg-content1/50",
                         )}
                         onClick={() => {
                           setCurrentRoundness(item.value);
@@ -1260,17 +1417,17 @@ const Sidebar = () => {
                                 ...settings.border,
                                 radius: item.value,
                               },
-                            })
+                            }),
                           );
                         }}
                       >
-                        <div className={cn("icon", item.icon)} />
+                        {item.icon}
                         <p
                           className={cn(
                             "text-3xs uppercase  tracking-wider",
                             settings.border.radius === item.value
                               ? "opacity-100"
-                              : "opacity-50"
+                              : "opacity-50",
                           )}
                         >
                           {item.label}
@@ -1338,7 +1495,7 @@ const Sidebar = () => {
                                   ...settings.download,
                                   format: key as "jpg" | "png",
                                 },
-                              })
+                              }),
                             );
                           }
                         }}
@@ -1373,7 +1530,7 @@ const Sidebar = () => {
                               "flex items-center justify-center max-md:h-20 md:aspect-[4/3]  rounded-md flex-col gap-2 cursor-pointer",
                               settings.download.quality === item
                                 ? "bg-content1"
-                                : "hover:bg-content1/50"
+                                : "hover:bg-content1/50",
                             )}
                             onClick={() =>
                               dispatch(
@@ -1382,7 +1539,7 @@ const Sidebar = () => {
                                     ...settings.download,
                                     quality: item,
                                   },
-                                })
+                                }),
                               )
                             }
                           >

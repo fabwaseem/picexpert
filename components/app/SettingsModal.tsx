@@ -1,29 +1,23 @@
 import { cn } from "@/lib/utils";
 import {
-  Button,
   Card,
   CardBody,
-  Checkbox,
   Chip,
   Divider,
-  Input,
-  Link,
   Modal,
   ModalBody,
   ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Textarea,
+  ModalHeader
 } from "@nextui-org/react";
 import { useTheme } from "next-themes";
-import React, { useState } from "react";
-import Image from "next/image";
 import {
   DiscordIcon,
   FeedbackIcon,
   Logo,
   MoonFilledIcon,
   StarIcon,
+  SunFilledIcon,
+  SystemIcon,
   TwitterIcon,
 } from "../icons";
 
@@ -60,68 +54,56 @@ const SettingsModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
             <ModalBody>
               <div className="flex gap-3">
                 <div
-                  className="flex-1 text-center cursor-pointer"
+                  className="flex-1 text-center cursor-pointer group"
                   onClick={() => setTheme("system")}
                 >
-                  <div className="relative aspect-square mb-3 ">
-                    <Image
-                      src="https://picsum.photos/200"
-                      alt="feature"
-                      className={cn(
-                        "w-full h-full object-cover rounded-lg ",
-                        theme === "system"
-                          ? "outline outline-1 outline-white outline-offset-3"
-                          : ""
-                      )}
-                      fill
-                      sizes="200px"
-                    />
+                  <div
+                    className={cn(
+                      "aspect-square mb-3 rounded-lg flex items-center justify-center bg-content2 group-hover:bg-content3 transition-colors",
+                      theme === "system"
+                        ? "outline outline-2 outline-primary outline-offset-2"
+                        : "",
+                    )}
+                  >
+                    <SystemIcon size={40} className="text-default-600" />
                   </div>
                   <p className="text-xs font-bold uppercase">system</p>
                 </div>
                 <div
-                  className="flex-1 text-center cursor-pointer"
+                  className="flex-1 text-center cursor-pointer group"
                   onClick={() => setTheme("light")}
                 >
-                  <div className="relative aspect-square mb-3 ">
-                    <Image
-                      src="https://picsum.photos/200"
-                      alt="feature"
-                      className={cn(
-                        "w-full h-full object-cover rounded-lg ",
-                        theme === "light"
-                          ? "outline outline-1 dark:outline-white outline-black outline-offset-3"
-                          : ""
-                      )}
-                      fill
-                      sizes="200px"
-                    />
+                  <div
+                    className={cn(
+                      "aspect-square mb-3 rounded-lg flex items-center justify-center bg-content2 group-hover:bg-content3 transition-colors",
+                      theme === "light"
+                        ? "outline outline-2 outline-primary outline-offset-2"
+                        : "",
+                    )}
+                  >
+                    <SunFilledIcon size={40} className="text-default-600" />
                   </div>
                   <p className="text-xs font-bold uppercase">light</p>
                 </div>
                 <div
-                  className="flex-1 text-center cursor-pointer"
+                  className="flex-1 text-center cursor-pointer group"
                   onClick={() => setTheme("dark")}
                 >
-                  <div className="relative aspect-square mb-3 ">
-                    <Image
-                      src="https://picsum.photos/200"
-                      alt="feature"
-                      className={cn(
-                        "w-full h-full object-cover rounded-lg ",
-                        theme === "dark"
-                          ? "outline outline-1 outline-white  outline-offset-3"
-                          : ""
-                      )}
-                      fill
-                      sizes="200px"
-                    />
+                  <div
+                    className={cn(
+                      "aspect-square mb-3 rounded-lg flex items-center justify-center bg-content2 group-hover:bg-content3 transition-colors",
+                      theme === "dark"
+                        ? "outline outline-2 outline-primary outline-offset-2"
+                        : "",
+                    )}
+                  >
+                    <MoonFilledIcon size={40} className="text-default-600" />
                   </div>
                   <p className="text-xs font-bold uppercase">dark</p>
                 </div>
               </div>
 
-              <Divider className="my-3" />
+              {/* <Divider className="my-3" />
               <div className="grid grid-cols-2 gap-3">
                 <Card
                   className="cursor-pointer bg-default-100 hover:bg-default-50"
@@ -171,7 +153,7 @@ const SettingsModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
                     </p>
                   </CardBody>
                 </Card>
-              </div>
+              </div> */}
               <Divider className="my-3" />
               <div className="flex justify-between items-center pb-4">
                 <div className="flex gap-2 items-center">

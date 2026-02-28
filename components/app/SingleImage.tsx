@@ -14,6 +14,7 @@ import {
 } from "@nextui-org/react";
 import { PlusRoundIcon } from "../icons";
 import Image from "next/image";
+import WatermarkOverlay from "./WatermarkOverlay";
 
 const SingleImage = ({ file }: { file: DetailedFile }) => {
   const dispatch = useAppDispatch();
@@ -123,6 +124,20 @@ const SingleImage = ({ file }: { file: DetailedFile }) => {
                 alt={file.name}
                 className="pointer-events-none select-none w-full h-full"
               />
+              {/* Watermark Overlay inside ReactCrop to align with image */}
+              {settings.watermark?.enabled && (
+                <div
+                  className="absolute pointer-events-none z-10"
+                  style={{
+                    left: `${(file.crop ? file.crop : crop).x}%`,
+                    top: `${(file.crop ? file.crop : crop).y}%`,
+                    width: `${(file.crop ? file.crop : crop).width}%`,
+                    height: `${(file.crop ? file.crop : crop).height}%`,
+                  }}
+                >
+                  <WatermarkOverlay settings={settings} />
+                </div>
+              )}
             </ReactCrop>
           )}
           <div className="flex xl:opacity-0 group-hover:opacity-100 duration-500 transition-opacity absolute top-2 right-2 items-center gap-2 z-10 ">

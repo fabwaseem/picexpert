@@ -23,7 +23,7 @@ export const calculateDimensions = (ratio: {
 };
 
 export const convertToDetailedFile = (
-  file: File
+  file: File,
 ): Promise<DetailedFile | null> => {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -150,10 +150,126 @@ export const getAspectRatio = (width: number, height: number): string => {
   return `${width}:${height}`;
 };
 
+let watermarkCache: { url: string; bitmap: ImageBitmap } | null = null;
+
+export const drawWatermark = async (
+  ctx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  settings: SettingsProps,
+) => {
+  if (!settings.watermark?.enabled) return;
+
+  const opacity = settings.watermark.opacity;
+  let size = (settings.watermark.size * Math.min(width, height)) / 100;
+
+  ctx.save();
+  ctx.globalAlpha = opacity;
+
+  let wmWidth = 0;
+  let wmHeight = 0;
+  let watermarkBitmap: ImageBitmap | null = null;
+  let textMetrics: { width: number; height: number } | null = null;
+
+  if (settings.watermark.type === "image" && settings.watermark.image.image) {
+    try {
+      const url = settings.watermark.image.image.url + "";
+      if (watermarkCache && watermarkCache.url === url) {
+        watermarkBitmap = watermarkCache.bitmap;
+      } else {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        watermarkBitmap = await createImageBitmap(blob);
+        watermarkCache = { url, bitmap: watermarkBitmap };
+      }
+      wmWidth = size;
+      wmHeight = (size / watermarkBitmap.width) * watermarkBitmap.height;
+    } catch (e) {
+      console.error("Failed to load watermark image", e);
+    }
+  } else if (
+    settings.watermark.type === "text" &&
+    settings.watermark.text.text
+  ) {
+    const text = settings.watermark.text.text;
+    const font = settings.watermark.text.font;
+    const color = settings.watermark.text.color;
+    ctx.font = `${size}px ${font}`;
+    ctx.fillStyle = color;
+
+    const metrics = ctx.measureText(text);
+    wmWidth = metrics.width;
+    wmHeight =
+      metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+    textMetrics = { width: wmWidth, height: wmHeight };
+  }
+
+  if (settings.watermark.pattern === "repeat") {
+    if (wmWidth > 0 && wmHeight > 0) {
+      const diagonal = Math.sqrt(width * width + height * height);
+      ctx.translate(width / 2, height / 2);
+
+      const angle = settings.watermark.direction;
+
+      ctx.rotate((angle * Math.PI) / 180);
+      ctx.translate(-diagonal, -diagonal);
+
+      const gapX = wmWidth * 0.5;
+      const gapY = wmHeight * 2;
+
+      for (let i = 0; i < diagonal * 2; i += wmWidth + gapX) {
+        for (let j = 0; j < diagonal * 2; j += wmHeight + gapY) {
+          const offsetX =
+            (Math.floor(j / (wmHeight + gapY)) % 2) * (wmWidth + gapX) * 0.5;
+
+          if (watermarkBitmap) {
+            ctx.drawImage(watermarkBitmap, i + offsetX, j, wmWidth, wmHeight);
+          } else if (textMetrics) {
+            ctx.textBaseline = "alphabetic";
+            ctx.textAlign = "left";
+            ctx.direction = "ltr";
+            const metrics = ctx.measureText(settings.watermark.text.text);
+            ctx.fillText(
+              settings.watermark.text.text,
+              i + offsetX,
+              j + metrics.actualBoundingBoxAscent,
+            );
+          }
+        }
+      }
+    }
+  } else {
+    const sideOffset = settings.watermark.sideOffset || 0;
+    const availableWidth = Math.max(0, width - wmWidth - sideOffset * 2);
+    const availableHeight = Math.max(0, height - wmHeight - sideOffset * 2);
+
+    const positionX =
+      sideOffset + (settings.watermark.position.x / 100) * availableWidth;
+    const positionY =
+      sideOffset + (settings.watermark.position.y / 100) * availableHeight;
+
+    if (watermarkBitmap) {
+      ctx.drawImage(watermarkBitmap, positionX, positionY, wmWidth, wmHeight);
+    } else if (textMetrics) {
+      ctx.textBaseline = "alphabetic";
+      ctx.textAlign = "left";
+      ctx.direction = "ltr";
+      const metrics = ctx.measureText(settings.watermark.text.text);
+      ctx.fillText(
+        settings.watermark.text.text,
+        positionX,
+        positionY + metrics.actualBoundingBoxAscent,
+      );
+    }
+  }
+
+  ctx.restore();
+};
+
 export const expandImage = (
   file: DetailedFile,
   settings: SettingsProps,
-  isPreview: boolean
+  isPreview: boolean,
 ): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -181,7 +297,7 @@ export const expandImage = (
       // **4. Calculate aspect ratio and scaled dimensions**
       const aspectRatio = Math.min(
         width / imgBitmap.width,
-        height / imgBitmap.height
+        height / imgBitmap.height,
       );
       const scaledWidth = imgBitmap.width * aspectRatio;
       const scaledHeight = imgBitmap.height * aspectRatio;
@@ -195,9 +311,25 @@ export const expandImage = (
       canvas.height = height;
 
       // **7. Handle background fill options**
-      if (settings.background.type === "solid") {
-        ctx.fillStyle = settings.background.solid.color;
-        ctx.fillRect(0, 0, width, height);
+      if (settings.background.type === "color") {
+        if (settings.background.color.mode === "solid") {
+          ctx.fillStyle = settings.background.color.solid;
+          ctx.fillRect(0, 0, width, height);
+        } else if (settings.background.color.mode === "gradient") {
+          const { start, end, direction } = settings.background.color.gradient;
+          const angle = (direction * Math.PI) / 180;
+          const diagonal = Math.sqrt(width * width + height * height);
+          const x0 = width / 2 - (Math.cos(angle) * diagonal) / 2;
+          const y0 = height / 2 - (Math.sin(angle) * diagonal) / 2;
+          const x1 = width / 2 + (Math.cos(angle) * diagonal) / 2;
+          const y1 = height / 2 + (Math.sin(angle) * diagonal) / 2;
+
+          const gradient = ctx.createLinearGradient(x0, y0, x1, y1);
+          gradient.addColorStop(0, start);
+          gradient.addColorStop(1, end);
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, width, height);
+        }
       } else if (settings.download.format === "jpg") {
         ctx.fillStyle = "#fff"; // White default background for JPEG
         ctx.fillRect(0, 0, width, height);
@@ -261,7 +393,9 @@ export const expandImage = (
       }
 
       // **9. Draw the image with a border radius (centered)**
-      const borderRadius = settings.border.radius;
+      const borderRadius =
+        (Math.min(scaledWidth, scaledHeight) / 2) *
+        (settings.border.radius / 100);
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(x + borderRadius, y);
@@ -270,21 +404,21 @@ export const expandImage = (
         x + scaledWidth,
         y,
         x + scaledWidth,
-        y + borderRadius
+        y + borderRadius,
       );
       ctx.lineTo(x + scaledWidth, y + scaledHeight - borderRadius);
       ctx.quadraticCurveTo(
         x + scaledWidth,
         y + scaledHeight,
         x + scaledWidth - borderRadius,
-        y + scaledHeight
+        y + scaledHeight,
       );
       ctx.lineTo(x + borderRadius, y + scaledHeight);
       ctx.quadraticCurveTo(
         x,
         y + scaledHeight,
         x,
-        y + scaledHeight - borderRadius
+        y + scaledHeight - borderRadius,
       );
       ctx.lineTo(x, y + borderRadius);
       ctx.quadraticCurveTo(x, y, x + borderRadius, y);
@@ -294,50 +428,7 @@ export const expandImage = (
       ctx.restore();
 
       // Draw watermark (optional) - now after everything else
-      if (settings.watermark?.enabled) {
-        const opacity = settings.watermark.opacity;
-        let size = (settings.watermark.size * Math.min(width, height)) / 100; // Size as percentage of smaller dimension
-        const positionX = (settings.watermark.position.x / 100) * width; // Convert percentage to actual position
-        const positionY = (settings.watermark.position.y / 100) * height; // Convert percentage to actual position
-
-        ctx.save(); // Save the current canvas state
-        ctx.globalAlpha = opacity;
-
-        if (settings.watermark.type === "image" && settings.watermark.image) {
-          const response = await fetch(settings.watermark.image.url + "");
-          const blob = await response.blob();
-          const watermark = await createImageBitmap(blob);
-          let wmWidth = size;
-          let wmHeight = (size / watermark.width) * watermark.height;
-
-          ctx.drawImage(
-            watermark,
-            positionX - wmWidth / 2,
-            positionY - wmHeight / 2,
-            wmWidth,
-            wmHeight
-          );
-        } else if (
-          settings.watermark.type === "text" &&
-          settings.watermark.text.text
-        ) {
-          const text = settings.watermark.text.text;
-          const font = settings.watermark.text.font;
-          const color = settings.watermark.text.color;
-          ctx.font = `${size}px ${font}`;
-          ctx.fillStyle = color;
-          let textWidth = ctx.measureText(text).width;
-          let textHeight = size;
-
-          ctx.fillText(
-            text,
-            positionX - textWidth / 2,
-            positionY + textHeight / 2
-          );
-        }
-
-        ctx.restore(); // Restore the previous canvas state (resets globalAlpha)
-      }
+      await drawWatermark(ctx, width, height, settings);
 
       // **11. Convert canvas to a PNG data URL**
       const blobOutput = await canvas.convertToBlob({ type: "image/png" });
@@ -373,7 +464,7 @@ export const expandImage = (
           0,
           0,
           previewWidth,
-          previewHeight
+          previewHeight,
         );
 
         const previewBlobOutput = await previewCanvas.convertToBlob({
@@ -391,7 +482,7 @@ export const expandImage = (
 
 export const generateCropped = (
   file: DetailedFile,
-  settings: SettingsProps
+  settings: SettingsProps,
 ): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -445,7 +536,9 @@ export const generateCropped = (
       const offsetY = (targetHeight - scaledHeight) / 2;
 
       // Draw the border radius
-      const borderRadius = settings.border.radius;
+      const borderRadius =
+        (Math.min(scaledWidth, scaledHeight) / 2) *
+        (settings.border.radius / 100);
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(offsetX + borderRadius, offsetY);
@@ -454,21 +547,21 @@ export const generateCropped = (
         offsetX + scaledWidth,
         offsetY,
         offsetX + scaledWidth,
-        offsetY + borderRadius
+        offsetY + borderRadius,
       );
       ctx.lineTo(offsetX + scaledWidth, offsetY + scaledHeight - borderRadius);
       ctx.quadraticCurveTo(
         offsetX + scaledWidth,
         offsetY + scaledHeight,
         offsetX + scaledWidth - borderRadius,
-        offsetY + scaledHeight
+        offsetY + scaledHeight,
       );
       ctx.lineTo(offsetX + borderRadius, offsetY + scaledHeight);
       ctx.quadraticCurveTo(
         offsetX,
         offsetY + scaledHeight,
         offsetX,
-        offsetY + scaledHeight - borderRadius
+        offsetY + scaledHeight - borderRadius,
       );
       ctx.lineTo(offsetX, offsetY + borderRadius);
       ctx.quadraticCurveTo(offsetX, offsetY, offsetX + borderRadius, offsetY);
@@ -485,8 +578,13 @@ export const generateCropped = (
         offsetX,
         offsetY, // Destination coordinates
         scaledWidth,
-        scaledHeight // Destination dimensions
+        scaledHeight, // Destination dimensions
       );
+
+      ctx.restore();
+
+      // Draw watermark
+      await drawWatermark(ctx, targetWidth, targetHeight, settings);
 
       // Generate blob URL and resolve the promise
       const croppedBlob = await canvas.convertToBlob({ type: "image/png" });
@@ -499,7 +597,7 @@ export const generateCropped = (
 
 export const downloadSingleImage = async (
   file: DetailedFile,
-  settings: SettingsProps
+  settings: SettingsProps,
 ) => {
   const blobUrl = file.generatedImage;
   const extension = settings.download.format;
@@ -514,7 +612,7 @@ export const downloadSingleImage = async (
 
 export const downloadZip = async (
   files: DetailedFile[],
-  settings: SettingsProps
+  settings: SettingsProps,
 ) => {
   const zip = new JSZip();
   let zipName = `picExpert.net_${settings.width}x${settings.height}`;

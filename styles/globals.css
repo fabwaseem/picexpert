@@ -10,56 +10,6 @@
 
 @layer components {
 
-  .icon {
-    /* Base class for all icons */
-    width: 22px;
-    height: 22px;
-    position: relative;
-    overflow: hidden;
-    border-radius: 6px;
-    flex-shrink: 0;
-    border: 2px solid #cecece;
-  }
-
-  .icon::before {
-    /* Base style for pseudo-element */
-    content: "";
-    position: absolute;
-    width: 200%;
-    height: 200%;
-    box-shadow: inset 0 0 0 2px #7a7a7a;
-  }
-
-  .icon.sharp::before {
-    /* Sharp icon style */
-    top: 6px;
-    right: 6px;
-  }
-
-  .icon.curved::before {
-    /* Curved icon style */
-    top: 5px;
-    right: 5px;
-    border-radius: 8px;
-  }
-
-  .icon.round::before {
-    /* Round icon style */
-    top: 5px;
-    right: 5px;
-    border-radius: 14px;
-  }
-
-  .dark .icon {
-    /* Dark mode styles */
-    background: #18181b;
-    border: 2px solid #505055;
-  }
-
-  .dark .icon::before {
-    box-shadow: inset 0 0 0 2px #dbdbdb;
-  }
-
   .my-masonry-grid {
     display: -webkit-box;
     /* Not needed if autoprefixing */
