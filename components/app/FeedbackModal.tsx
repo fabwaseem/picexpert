@@ -34,7 +34,7 @@ const FeedbackModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
             <ModalHeader className="flex flex-col gap-1">
               Send feedback
               <div className="text-sm text-default-400">
-                We'd love to hear from you
+                We&apos;d love to hear from you
               </div>
             </ModalHeader>
 
@@ -45,7 +45,7 @@ const FeedbackModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
                     key={index}
                     className={cn(
                       "flex-1 aspect-square bg-content2 rounded-full text-4xl",
-                      selectedEmoji === index ? "bg-white" : ""
+                      selectedEmoji === index ? "bg-white" : "",
                     )}
                     onClick={() => setSelectedEmoji(index)}
                   >
@@ -55,7 +55,6 @@ const FeedbackModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
               </div>
 
               <Textarea
-                autoFocus
                 label="Feedback"
                 placeholder="How we can improve your experience?"
                 size="lg"
