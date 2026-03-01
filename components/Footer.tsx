@@ -1,5 +1,6 @@
 import { Button, Divider, Link } from "@nextui-org/react";
 import React from "react";
+
 import { GithubIcon } from "./icons";
 
 const Footer = () => {
@@ -12,14 +13,14 @@ const Footer = () => {
             Made by{" "}
             <Link
               isExternal
-              href="https://waseemanjum.com"
               className="font-medium"
+              href="https://waseemanjum.com"
             >
               Waseem Anjum
             </Link>{" "}
             with ❤️
           </p>
-          <Link href="https://github.com/fabwaseem" isExternal>
+          <Link isExternal href="https://github.com/fabwaseem">
             <Button isIconOnly variant="light">
               <GithubIcon size={24} />
             </Button>

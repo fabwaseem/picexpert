@@ -4,6 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@nextui-org/react";
 import { Input } from "@nextui-org/input";
 import { HexColorPicker } from "react-colorful";
 import validateColor from "validate-color";
+
 import { cn } from "@/lib/utils";
 
 interface GradientPickerProps {
@@ -37,6 +38,7 @@ const ColorHandle = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value;
+
     if (val[0] !== "#") {
       val = "#" + val;
     }
@@ -50,7 +52,7 @@ const ColorHandle = ({
   };
 
   return (
-    <Popover placement="bottom" isOpen={isOpen} onOpenChange={setIsOpen}>
+    <Popover isOpen={isOpen} placement="bottom" onOpenChange={setIsOpen}>
       <PopoverTrigger>
         <div
           className={cn(
@@ -71,16 +73,16 @@ const ColorHandle = ({
           <HexColorPicker color={color} onChange={handleChange} />
           <div className="mt-2">
             <Input
-              size="sm"
-              variant="flat"
-              value={color}
-              onChange={handleInputChange}
               fullWidth
               classNames={{
                 input: "text-center font-mono text-xs uppercase",
                 inputWrapper: "h-8 min-h-0 px-1 bg-default-100",
               }}
               isInvalid={!validateColor(color)}
+              size="sm"
+              value={color}
+              variant="flat"
+              onChange={handleInputChange}
             />
           </div>
         </div>
@@ -112,15 +114,15 @@ export const GradientPicker = ({
       <div className="absolute top-1/2 left-3 right-3 -translate-y-1/2 h-0">
         <ColorHandle
           color={startColor}
+          position="left"
           onChange={onStartChange}
           onChangeEnd={onStartChangeEnd}
-          position="left"
         />
         <ColorHandle
           color={endColor}
+          position="right"
           onChange={onEndChange}
           onChangeEnd={onEndChangeEnd}
-          position="right"
         />
       </div>
     </div>

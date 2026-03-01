@@ -1,16 +1,18 @@
 "use client";
+import { Card, CardBody, ScrollShadow } from "@nextui-org/react";
+import { useEffect, useRef, useState } from "react";
+import Masonry from "react-masonry-css";
+
+import SingleImage from "./SingleImage";
+import LoadingScreen from "./LoadingScreen";
+
 import DropArea from "@/components/app/DropArea";
 import { ImageIcon, PlusRoundIcon } from "@/components/icons";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { updateFiles } from "@/store/slices/FilesSlice";
 import { DetailedFile } from "@/types";
-import { Card, CardBody, ScrollShadow } from "@nextui-org/react";
-import { useEffect, useRef, useState } from "react";
-import Masonry from "react-masonry-css";
-import SingleImage from "./SingleImage";
-
 import { setupWorker } from "@/workers/setup";
-import LoadingScreen from "./LoadingScreen";
+
 
 const ImagesContainer = () => {
   const files = useAppSelector((state) => state.files);

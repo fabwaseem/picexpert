@@ -1,5 +1,6 @@
-import Sidebar from "@/components/app/Sidebar";
 import { ReduxProvider } from "../redux-provider";
+
+import Sidebar from "@/components/app/Sidebar";
 
 export default function PricingLayout({
   children,

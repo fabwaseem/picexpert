@@ -1,6 +1,5 @@
 import Footer from "@/components/Footer";
 import CustomNavbar from "@/components/navbar";
-import { Link } from "@nextui-org/link";
 
 export default function PricingLayout({
   children,

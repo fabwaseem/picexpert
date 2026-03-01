@@ -8,53 +8,62 @@ import {
   NavbarMenu,
   NavbarMenuItem,
   Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
 } from "@nextui-org/react";
-import { ThemeSwitch } from "./theme-switch";
-import { ChevronDownIcon, Logo } from "./icons";
 import Link from "next/link";
+import { useState } from "react";
+import { useTheme } from "next-themes";
+
+import { ThemeSwitch } from "./theme-switch";
+import { Logo, LogoDark } from "./icons";
 
 export default function CustomNavbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { resolvedTheme } = useTheme();
+
   return (
-    <Navbar isBlurred maxWidth="xl">
+    <Navbar
+      isBlurred
+      isMenuOpen={isMenuOpen}
+      maxWidth="xl"
+      onMenuOpenChange={setIsMenuOpen}
+    >
       <NavbarContent className="sm:hidden" justify="start">
-        <NavbarMenuToggle />
+        <NavbarMenuToggle
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+        />
       </NavbarContent>
       <NavbarContent className="sm:hidden pr-3" justify="center">
         <NavbarBrand>
-          <Logo />
+          {resolvedTheme === "dark" ? <Logo /> : <LogoDark />}
           <span className="font-bold text-inherit text-lg">picExpert</span>
         </NavbarBrand>
       </NavbarContent>
       <NavbarContent className="hidden sm:flex gap-2" justify="center">
         <NavbarBrand>
-          <Logo />
+          {resolvedTheme === "dark" ? <Logo /> : <LogoDark />}
           <span className="text-xl flex gap-3 justify-center items-center mr-5">
             picExpert
           </span>
         </NavbarBrand>
         <NavbarItem>
-          <Button as={Link} variant="light" href="#features">
+          <Button as={Link} href="#features" variant="light">
             Features
           </Button>
         </NavbarItem>
         <NavbarItem>
-          <Button as={Link} variant="light" href="#pricing">
+          {/* <Button as={Link} href="#pricing" variant="light">
             pricing
-          </Button>
+          </Button> */}
         </NavbarItem>
       </NavbarContent>
       <NavbarContent justify="end">
         <NavbarItem className="hidden sm:flex">
           <Button
             as={Link}
-            color="primary"
-            href="#"
-            variant="solid"
             className="hidden sm:flex"
+            color="primary"
+            href="/app"
+            variant="solid"
           >
             Get Started
           </Button>
@@ -65,15 +74,23 @@ export default function CustomNavbar() {
       </NavbarContent>
       <NavbarMenu>
         <NavbarMenuItem>
-          <Link className="w-full" href="#features">
+          <Link
+            className="w-full"
+            href="#features"
+            onClick={() => setIsMenuOpen(false)}
+          >
             Features
           </Link>
         </NavbarMenuItem>
-        <NavbarMenuItem>
-          <Link className="w-full" href="#pricing">
+        {/* <NavbarMenuItem>
+          <Link
+            className="w-full"
+            href="#pricing"
+            onClick={() => setIsMenuOpen(false)}
+          >
             Pricing
           </Link>
-        </NavbarMenuItem>
+        </NavbarMenuItem> */}
       </NavbarMenu>
     </Navbar>
   );

@@ -1,4 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
+
 import { cn } from "@/lib/utils";
 
 interface AngleSelectorProps {
@@ -42,12 +43,14 @@ const AngleSelector = ({
     setIsDragging(true);
     e.currentTarget.setPointerCapture(e.pointerId);
     const newAngle = calculateAngle(e.clientX, e.clientY);
+
     setLocalAngle(newAngle);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (isDragging) {
       const newAngle = calculateAngle(e.clientX, e.clientY);
+
       setLocalAngle(newAngle);
     }
   };
@@ -57,6 +60,7 @@ const AngleSelector = ({
     e.currentTarget.releasePointerCapture(e.pointerId);
 
     const finalAngle = calculateAngle(e.clientX, e.clientY);
+
     setLocalAngle(finalAngle);
     onChange(finalAngle);
   };
@@ -135,16 +139,16 @@ const AngleSelector = ({
         {[-45, 0, 45, 90].map((a) => (
           <button
             key={a}
-            onClick={() => {
-              setLocalAngle(a);
-              onChange(a);
-            }}
             className={cn(
               "text-[10px] py-1.5 px-1 rounded-md transition-colors border",
               localAngle === a
                 ? "bg-primary/10 border-primary text-primary"
                 : "bg-content2 border-transparent hover:bg-content3 text-default-600",
             )}
+            onClick={() => {
+              setLocalAngle(a);
+              onChange(a);
+            }}
           >
             {a === 0 ? "0°" : a > 0 ? `+${a}°` : `${a}°`}
           </button>

@@ -12,10 +12,13 @@ addEventListener(
     }>
   ) => {
     const { files, settings, isPreview, crop } = event.data;
+
     try {
       const newFiles: DetailedFile[] = [];
+
       for (const file of files) {
         let generatedImage = "";
+
         if (crop) {
           generatedImage = await generateCropped(file, settings);
         } else {
@@ -30,6 +33,7 @@ addEventListener(
     } catch (error) {
       if (error instanceof Error) {
         const errorMessage = error.message;
+
         self.postMessage({ type: "error", error: errorMessage, data: [] });
       } else {
         console.error("Unknown error:", error);

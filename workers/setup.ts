@@ -9,6 +9,7 @@ export const setupWorker = (
   workerRef.current = new Worker(new URL("./", import.meta.url));
   workerRef.current.onmessage = (event) => {
     const { type, data, error } = event.data;
+
     if (type === "success") {
       callback(data);
     } else if (type === "error") {
@@ -21,6 +22,7 @@ export const setupWorker = (
     console.error("Worker error:", error);
     setIsLoading(false);
   };
+
   return () => {
     workerRef.current?.terminate();
   };

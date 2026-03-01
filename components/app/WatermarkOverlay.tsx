@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+
 import { SettingsProps } from "@/types";
 import { drawWatermark } from "@/lib/utils";
 
@@ -13,10 +14,12 @@ const WatermarkOverlay: React.FC<WatermarkOverlayProps> = ({ settings }) => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
+
     if (!canvas) return;
 
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
+
       if (entry) {
         // Use device pixel ratio for sharper text
         // But drawWatermark expects CSS pixels?
@@ -29,15 +32,18 @@ const WatermarkOverlay: React.FC<WatermarkOverlayProps> = ({ settings }) => {
     });
 
     observer.observe(canvas);
+
     return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
     const render = async () => {
       const canvas = canvasRef.current;
+
       if (!canvas || dimensions.width === 0 || dimensions.height === 0) return;
 
       const ctx = canvas.getContext("2d");
+
       if (!ctx) return;
 
       // Clear canvas
@@ -58,9 +64,9 @@ const WatermarkOverlay: React.FC<WatermarkOverlayProps> = ({ settings }) => {
   return (
     <canvas
       ref={canvasRef}
-      width={dimensions.width}
-      height={dimensions.height}
       className="w-full h-full pointer-events-none block"
+      height={dimensions.height}
+      width={dimensions.width}
     />
   );
 };

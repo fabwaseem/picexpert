@@ -1,5 +1,6 @@
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 import { motion, useAnimation, PanInfo } from "framer-motion";
+
 import { useAppDispatch, useAppSelector } from "@/store";
 import { updateSetting } from "@/store/slices/settingsSlice";
 import { cn } from "@/lib/utils";
@@ -42,15 +43,19 @@ const DraggableWatermarkSelector = () => {
     updateHandlePosition();
 
     const handleResize = () => updateHandlePosition();
+
     window.addEventListener("resize", handleResize);
+
     return () => window.removeEventListener("resize", handleResize);
   }, [updateHandlePosition]);
 
   const snapValue = (val: number) => {
     const threshold = 5;
+
     if (Math.abs(val - 0) < threshold) return 0;
     if (Math.abs(val - 50) < threshold) return 50;
     if (Math.abs(val - 100) < threshold) return 100;
+
     return val;
   };
 
@@ -210,18 +215,18 @@ const DraggableWatermarkSelector = () => {
           <motion.div
             ref={handleRef}
             drag
+            animate={controls}
+            className="absolute top-0 left-0 w-8 h-8 rounded-lg bg-primary/90 backdrop-blur-md shadow-lg ring-2 ring-background cursor-grab active:cursor-grabbing z-10 flex items-center justify-center"
             dragConstraints={containerRef}
             dragElastic={0.1}
             dragMomentum={false}
-            animate={controls}
+            style={{}}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onDragEnd={handleDragEnd}
             onDragStart={() => {
               isDragging.current = true;
             }}
-            onDragEnd={handleDragEnd}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="absolute top-0 left-0 w-8 h-8 rounded-lg bg-primary/90 backdrop-blur-md shadow-lg ring-2 ring-background cursor-grab active:cursor-grabbing z-10 flex items-center justify-center"
-            style={{}}
           >
             {/* Inner dot */}
             <div className="w-1.5 h-1.5 rounded-full bg-white shadow-sm" />

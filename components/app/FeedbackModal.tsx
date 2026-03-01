@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import {
   Button,
   Modal,
@@ -10,6 +9,8 @@ import {
 } from "@nextui-org/react";
 import React, { useState } from "react";
 
+import { cn } from "@/lib/utils";
+
 interface FeedbackModalProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
@@ -19,12 +20,13 @@ const reactionEmojis = ["🤬", "😐", "😏", "😎", "😍"];
 
 const FeedbackModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
   const [selectedEmoji, setSelectedEmoji] = useState<number | null>(null);
+
   return (
     <Modal
       backdrop="blur"
       isOpen={isOpen}
-      onOpenChange={onOpenChange}
       placement="center"
+      onOpenChange={onOpenChange}
     >
       <ModalContent>
         {(onClose) => (
@@ -56,8 +58,8 @@ const FeedbackModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
                 autoFocus
                 label="Feedback"
                 placeholder="How we can improve your experience?"
-                variant="faded"
                 size="lg"
+                variant="faded"
               />
             </ModalBody>
             <ModalFooter>

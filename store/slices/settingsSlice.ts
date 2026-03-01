@@ -1,6 +1,8 @@
-import { SettingsProps } from "@/types";
-import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+
+import { createSlice } from "@reduxjs/toolkit";
+
+import { SettingsProps } from "@/types";
 
 const initialState: SettingsProps = {
   width: 512,
@@ -69,14 +71,17 @@ const settingsSlice = createSlice({
   reducers: {
     updateSetting: (state, action: PayloadAction<Partial<SettingsProps>>) => {
       const settingsToUpdate = action.payload;
+
       console.log(settingsToUpdate);
       Object.assign(state, settingsToUpdate);
       const settings = { ...state };
+
       localStorage.setItem("settings", JSON.stringify(settings));
     },
 
     loadSettings: (state) => {
       const settings = localStorage.getItem("settings");
+
       if (settings) {
         // Object.assign(state, JSON.parse(settings));
       }

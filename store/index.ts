@@ -1,7 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
+import { useDispatch, useSelector } from "react-redux";
+
 import filesReducer from "./slices/FilesSlice";
 import settingsReducer from "./slices/settingsSlice";
-import { useDispatch, useSelector } from "react-redux";
 
 const store = configureStore({
   reducer: {

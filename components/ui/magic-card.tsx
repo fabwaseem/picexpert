@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import {
   CSSProperties,
   ReactElement,
@@ -9,6 +8,8 @@ import {
   useRef,
   useState,
 } from "react";
+
+import { cn } from "@/lib/utils";
 
 interface MousePosition {
   x: number;
@@ -91,6 +92,7 @@ const MagicContainer = ({ children, className }: MagicContainerProps) => {
           -(box.getBoundingClientRect().left - rect.left) + mouse.current.x;
         const boxY =
           -(box.getBoundingClientRect().top - rect.top) + mouse.current.y;
+
         box.style.setProperty("--mouse-x", `${boxX}px`);
         box.style.setProperty("--mouse-y", `${boxY}px`);
 
@@ -104,7 +106,7 @@ const MagicContainer = ({ children, className }: MagicContainerProps) => {
   };
 
   return (
-    <div className={cn("h-full w-full", className)} ref={containerRef}>
+    <div ref={containerRef} className={cn("h-full w-full", className)}>
       {children}
     </div>
   );
@@ -188,18 +190,18 @@ const MagicCard: React.FC<MagicCardProps> = ({
 }) => {
   return (
     <div
-      style={
-        {
-          "--mask-size": `${size}px`,
-          "--border-color": `${borderColor}`,
-        } as CSSProperties
-      }
       className={cn(
         "relative z-0 h-full w-full rounded-2xl p-6",
         "bg-gray-300 dark:bg-gray-700",
         "bg-[radial-gradient(var(--mask-size)_circle_at_var(--mouse-x)_var(--mouse-y),var(--border-color),transparent_100%)]",
         className
       )}
+      style={
+        {
+          "--mask-size": `${size}px`,
+          "--border-color": `${borderColor}`,
+        } as CSSProperties
+      }
       {...props}
     >
       {children}

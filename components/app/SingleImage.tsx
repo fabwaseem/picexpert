@@ -1,20 +1,23 @@
 import React, { useEffect, useState } from "react";
-
 import ReactCrop, { type Crop } from "react-image-crop";
+
 import "react-image-crop/dist/ReactCrop.css";
-import { DetailedFile } from "@/types";
-import { useAppDispatch, useAppSelector } from "@/store";
-import { removeFile, updateFile } from "@/store/slices/FilesSlice";
-import { getTruncatedName } from "@/lib/utils";
 import {
   Card,
   CardBody,
   Tooltip,
   Image as NextUIImage,
 } from "@nextui-org/react";
+
 import { PlusRoundIcon } from "../icons";
-import Image from "next/image";
+
 import WatermarkOverlay from "./WatermarkOverlay";
+
+import { DetailedFile } from "@/types";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { removeFile, updateFile } from "@/store/slices/FilesSlice";
+import { getTruncatedName } from "@/lib/utils";
+
 
 const SingleImage = ({ file }: { file: DetailedFile }) => {
   const dispatch = useAppDispatch();
@@ -60,8 +63,10 @@ const SingleImage = ({ file }: { file: DetailedFile }) => {
       newCrop.width = (scaledWidth / originalWidth) * 100;
       newCrop.height = (scaledHeight / originalHeight) * 100;
       dispatch(updateFile({ id: file.id, crop: newCrop }));
+
       return crop;
     };
+
     if (settings.mode === "crop" && !settings.customCrop) {
       setCrop(calculateCrop());
     }
@@ -87,6 +92,7 @@ const SingleImage = ({ file }: { file: DetailedFile }) => {
 
     // Calculate the aspect ratio
     const aspectRatio = widthValue / heightValue;
+
     return aspectRatio;
   };
 
@@ -96,15 +102,19 @@ const SingleImage = ({ file }: { file: DetailedFile }) => {
         <div className="relative">
           {settings.mode === "expand" ? (
             <NextUIImage
-              src={file.generatedImage ? file.generatedImage : file.previewUrl}
               alt={file.name}
+              src={file.generatedImage ? file.generatedImage : file.previewUrl}
               width={file.width}
               // height={file.height}
               className="w-full rounded-md shadow pointer-events-none select-none"
             />
           ) : (
             <ReactCrop
+              ruleOfThirds
+              className="w-full h-full rounded-md shadow"
               crop={file.crop ? file.crop : crop}
+              keepSelection={true}
+              locked={settings.customCrop ? false : true}
               onChange={(_, percentCrop) => handleChangeCrop(percentCrop)}
               // onComplete={(c) => handleCropComplete(c)}
               aspect={
@@ -114,15 +124,11 @@ const SingleImage = ({ file }: { file: DetailedFile }) => {
                     : settings.aspectRatio
                   : undefined
               }
-              keepSelection={true}
-              locked={settings.customCrop ? false : true}
-              ruleOfThirds
-              className="w-full h-full rounded-md shadow"
             >
               <img
-                src={file.previewUrl}
                 alt={file.name}
                 className="pointer-events-none select-none w-full h-full"
+                src={file.previewUrl}
               />
               {/* Watermark Overlay inside ReactCrop to align with image */}
               {settings.watermark?.enabled && (
@@ -141,11 +147,11 @@ const SingleImage = ({ file }: { file: DetailedFile }) => {
             </ReactCrop>
           )}
           <div className="flex xl:opacity-0 group-hover:opacity-100 duration-500 transition-opacity absolute top-2 right-2 items-center gap-2 z-10 ">
-            <Tooltip content="Remove" showArrow>
+            <Tooltip showArrow content="Remove">
               <div
                 className="cursor-pointer  bg-zinc-500 bg-opacity-50 rounded-full p-1"
-                data-tooltip-id="remove-button"
                 data-tooltip-content={"Remove Image"}
+                data-tooltip-id="remove-button"
                 onClick={() => handleRemoveFile(file.id)}
               >
                 <PlusRoundIcon className="rotate-45" />

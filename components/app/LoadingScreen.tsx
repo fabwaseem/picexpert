@@ -1,8 +1,9 @@
 "use client";
 import React from "react";
 
-import { cn } from "@/lib/utils";
 import { Logo } from "../icons";
+
+import { cn } from "@/lib/utils";
 
 const LoadingScreen = ({ isLoading }: { isLoading: boolean }) => {
   return (
@@ -13,7 +14,7 @@ const LoadingScreen = ({ isLoading }: { isLoading: boolean }) => {
       )}
       style={{ backgroundColor: "rgba(21, 22, 27, .5)" }}
     >
-      <Logo size={80} className="animate-pulse" />
+      <Logo className="animate-pulse" size={80} />
       <p>Processing, please wait...</p>
     </div>
   );

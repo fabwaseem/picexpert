@@ -1,11 +1,12 @@
 "use client";
+import { Progress } from "@nextui-org/react";
+import React, { useState, useCallback } from "react";
+import { useDropzone } from "react-dropzone";
+
 import { cn, convertToDetailedFile, isSupported } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { addFiles } from "@/store/slices/FilesSlice";
 import { DetailedFile } from "@/types";
-import { Progress } from "@nextui-org/react";
-import React, { useState, useCallback } from "react";
-import { useDropzone } from "react-dropzone";
 
 const DropArea = ({
   children,
@@ -28,9 +29,11 @@ const DropArea = ({
       }));
 
       const filesToAdd: DetailedFile[] = [];
+
       for (let i = 0; i < acceptedFiles.length; i++) {
         if (isSupported(acceptedFiles[i])) {
           let file = await convertToDetailedFile(acceptedFiles[i]);
+
           if (file) {
             filesToAdd.push(file);
           }
@@ -72,7 +75,7 @@ const DropArea = ({
       </div>
       {isProcessing && (
         <div className="absolute bottom-0 left-0 right-0 bg-background/80 p-4">
-          <Progress value={percentComplete} className="w-full" />
+          <Progress className="w-full" value={percentComplete} />
           <p className="text-center mt-2">
             Processing {progress.processed} of {progress.total} images
           </p>

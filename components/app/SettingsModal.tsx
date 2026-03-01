@@ -1,8 +1,4 @@
-import { cn } from "@/lib/utils";
 import {
-  Card,
-  CardBody,
-  Chip,
   Divider,
   Modal,
   ModalBody,
@@ -10,16 +6,16 @@ import {
   ModalHeader
 } from "@nextui-org/react";
 import { useTheme } from "next-themes";
+
 import {
-  DiscordIcon,
-  FeedbackIcon,
   Logo,
   MoonFilledIcon,
-  StarIcon,
   SunFilledIcon,
   SystemIcon,
   TwitterIcon,
 } from "../icons";
+
+import { cn } from "@/lib/utils";
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -32,11 +28,11 @@ const SettingsModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
   return (
     <Modal
       backdrop="blur"
+      className="bg-default-100"
       isOpen={isOpen}
-      onOpenChange={onOpenChange}
       placement="center"
       size="lg"
-      className="bg-default-100"
+      onOpenChange={onOpenChange}
     >
       <ModalContent>
         {(onClose) => (
@@ -65,7 +61,7 @@ const SettingsModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
                         : "",
                     )}
                   >
-                    <SystemIcon size={40} className="text-default-600" />
+                    <SystemIcon className="text-default-600" size={40} />
                   </div>
                   <p className="text-xs font-bold uppercase">system</p>
                 </div>
@@ -81,7 +77,7 @@ const SettingsModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
                         : "",
                     )}
                   >
-                    <SunFilledIcon size={40} className="text-default-600" />
+                    <SunFilledIcon className="text-default-600" size={40} />
                   </div>
                   <p className="text-xs font-bold uppercase">light</p>
                 </div>
@@ -97,7 +93,7 @@ const SettingsModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
                         : "",
                     )}
                   >
-                    <MoonFilledIcon size={40} className="text-default-600" />
+                    <MoonFilledIcon className="text-default-600" size={40} />
                   </div>
                   <p className="text-xs font-bold uppercase">dark</p>
                 </div>
@@ -161,20 +157,13 @@ const SettingsModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
                   <h4 className="text-lg font-semibold opacity-50 transition-opacity">
                     picExpert
                   </h4>
-                  <Chip
-                    radius="sm"
-                    size="sm"
-                    variant="bordered"
-                    className="text-xs font-bold"
-                  >
-                    BETA
-                  </Chip>
+
                 </div>
                 <a
                   className="relative font-cursive group text-4xl"
                   href="https://twitter.com/fabwaseeem"
-                  target="_blank"
                   rel="noreferrer"
+                  target="_blank"
                 >
                   <span className="opacity-25 group-hover:opacity-50 transition-opacity">
                     Waseem
@@ -182,8 +171,8 @@ const SettingsModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
                     Anjum
                   </span>
                   <TwitterIcon
-                    size={30}
                     className="text-[#45a1ee] absolute inset-0 m-auto drop-shadow-lg opacity-0 group-hover:opacity-100 transition-all scale-0 group-hover:scale-100"
+                    size={30}
                   />
                 </a>
               </div>

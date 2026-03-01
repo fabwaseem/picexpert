@@ -1,14 +1,16 @@
 import React from "react";
-import GridPattern from "../ui/animated-grid-pattern";
 import { Button, Chip, Divider } from "@nextui-org/react";
+
+import GridPattern from "../ui/animated-grid-pattern";
 import { CheckCircleIcon } from "../icons";
 import { MagicCard, MagicContainer } from "../ui/magic-card";
+
 import { plans } from "@/config/plans";
 import { cn } from "@/lib/utils";
 
 const PricingSection = () => {
   return (
-    <section id="pricing" className="py-16 md:py-20 lg:py-28 gap-12  relative">
+    <section className="py-16 md:py-20 lg:py-28 gap-12  relative" id="pricing">
       <div className={` w-full mb-20 text-center z-10 relative`}>
         <span className="py-1 px-8 text-sm bg-white dark:bg-background rounded-full border mb-5 block w-max mx-auto border-yellow-500 text-yellow-500 dark:text-yellow-500">
           Pricing
@@ -38,9 +40,9 @@ const PricingSection = () => {
             {/* popular badge */}
             {item.isMostPop && (
               <Chip
-                variant="shadow"
-                color="primary"
                 className="absolute top-2 right-2 text-xs"
+                color="primary"
+                variant="shadow"
               >
                 Most Popular
               </Chip>
@@ -52,22 +54,22 @@ const PricingSection = () => {
             </div>
             <p className="mt-4 opacity-80">{item.desc}</p>
             <Button
-              variant="faded"
               className={cn(
                 "mt-5 ",
                 item.isMostPop &&
                   "from-[#9e3bf5]  to-[#1548f0]  bg-gradient-to-r text-white",
               )}
               size="lg"
+              variant="faded"
             >
               Get started
             </Button>
             <div className="relative flex my-6 gap-5 items-center">
-              <span className="w-0.5 h-0.5 rounded-full bg-content4 dark:bg-white/50 shrink-0"></span>
+              <span className="w-0.5 h-0.5 rounded-full bg-content4 dark:bg-white/50 shrink-0" />
               <Divider className="w-full flex-1" />
               <span className=" opacity-50 text-xs">Features</span>
               <Divider className="w-full flex-1" />
-              <span className="w-0.5 h-0.5 rounded-full bg-content4 dark:bg-white/50 shrink-0"></span>
+              <span className="w-0.5 h-0.5 rounded-full bg-content4 dark:bg-white/50 shrink-0" />
             </div>
             <ul className="flex flex-col gap-2">
               {item.features.map((feature, index) => (
@@ -82,15 +84,15 @@ const PricingSection = () => {
       </MagicContainer>
 
       <GridPattern
-        numSquares={30}
-        maxOpacity={0.5}
-        duration={2}
-        repeatDelay={1}
         className={cn(
           "[mask-image:radial-gradient(300px_circle_at_center,white,transparent)]",
           "md:[mask-image:radial-gradient(500px_circle_at_center,white,transparent)]",
           "inset-x-0 -top-[35%]  md:-top-[60%] h-full md:h-[200%]",
         )}
+        duration={2}
+        maxOpacity={0.5}
+        numSquares={30}
+        repeatDelay={1}
       />
     </section>
   );

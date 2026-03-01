@@ -1,8 +1,8 @@
-import { DetailedFile, SettingsProps } from "@/types";
 import clsx, { ClassValue } from "clsx";
 import JSZip from "jszip";
-import { MutableRefObject, Dispatch as ReactDispatch } from "react";
 import { twMerge } from "tailwind-merge";
+
+import { DetailedFile, SettingsProps } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -14,11 +14,13 @@ export const calculateDimensions = (ratio: {
 }) => {
   let width = 200;
   let height = 200;
+
   if (ratio.width > ratio.height) {
     height = (width * ratio.height) / ratio.width;
   } else {
     width = (height * ratio.width) / ratio.height;
   }
+
   return { width, height };
 };
 
@@ -27,9 +29,11 @@ export const convertToDetailedFile = (
 ): Promise<DetailedFile | null> => {
   return new Promise((resolve) => {
     const reader = new FileReader();
+
     reader.readAsDataURL(file);
     reader.onload = async () => {
       const image = new Image();
+
       image.src = reader.result as string;
       image.onload = async () => {
         const width = image.width;
@@ -52,9 +56,11 @@ export const convertToDetailedFile = (
         }
 
         const canvas = document.createElement("canvas");
+
         canvas.width = targetWidth;
         canvas.height = targetHeight;
         const ctx = canvas.getContext("2d");
+
         if (!ctx) return resolve(null);
         ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
 
@@ -80,6 +86,7 @@ export const convertToDetailedFile = (
           },
           generatedImage: "",
         };
+
         resolve(detailedFile);
       };
       image.onerror = () => {
@@ -91,12 +98,14 @@ export const convertToDetailedFile = (
 
 export const isSupported = (file: File): boolean => {
   const ext = file.name.substring(file.name.lastIndexOf(".") + 1);
+
   return ["jpg", "jpeg", "png", "webp"].indexOf(ext.toLowerCase()) > -1;
 };
 
 export const validateImageURL = (url: string): Promise<boolean> => {
   return new Promise((resolve) => {
     const image = new Image();
+
     image.src = url;
     image.onload = () => {
       resolve(true);
@@ -114,6 +123,7 @@ export const getTruncatedName = (name: string): string => {
     nameWithoutExtension.length > 10
       ? nameWithoutExtension.slice(0, 10) + ".."
       : nameWithoutExtension;
+
   return truncatedName + extension;
 };
 
@@ -125,11 +135,14 @@ export const calculateAspectRatio = (width: number, height: number): number => {
     if (b < 0.0000001) {
       return a;
     }
+
     return gcd(b, Math.floor(a % b));
   };
   const divisor = gcd(width, height);
+
   width /= divisor;
   height /= divisor;
+
   return width / height;
 };
 
@@ -142,11 +155,14 @@ export const getAspectRatio = (width: number, height: number): string => {
     if (b < 0.0000001) {
       return a;
     }
+
     return gcd(b, Math.floor(a % b));
   };
   const divisor = gcd(width, height);
+
   width /= divisor;
   height /= divisor;
+
   return `${width}:${height}`;
 };
 
@@ -174,11 +190,13 @@ export const drawWatermark = async (
   if (settings.watermark.type === "image" && settings.watermark.image.image) {
     try {
       const url = settings.watermark.image.image.url + "";
+
       if (watermarkCache && watermarkCache.url === url) {
         watermarkBitmap = watermarkCache.bitmap;
       } else {
         const response = await fetch(url);
         const blob = await response.blob();
+
         watermarkBitmap = await createImageBitmap(blob);
         watermarkCache = { url, bitmap: watermarkBitmap };
       }
@@ -194,10 +212,12 @@ export const drawWatermark = async (
     const text = settings.watermark.text.text;
     const font = settings.watermark.text.font;
     const color = settings.watermark.text.color;
+
     ctx.font = `${size}px ${font}`;
     ctx.fillStyle = color;
 
     const metrics = ctx.measureText(text);
+
     wmWidth = metrics.width;
     wmHeight =
       metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
@@ -207,6 +227,7 @@ export const drawWatermark = async (
   if (settings.watermark.pattern === "repeat") {
     if (wmWidth > 0 && wmHeight > 0) {
       const diagonal = Math.sqrt(width * width + height * height);
+
       ctx.translate(width / 2, height / 2);
 
       const angle = settings.watermark.direction;
@@ -229,6 +250,7 @@ export const drawWatermark = async (
             ctx.textAlign = "left";
             ctx.direction = "ltr";
             const metrics = ctx.measureText(settings.watermark.text.text);
+
             ctx.fillText(
               settings.watermark.text.text,
               i + offsetX,
@@ -255,6 +277,7 @@ export const drawWatermark = async (
       ctx.textAlign = "left";
       ctx.direction = "ltr";
       const metrics = ctx.measureText(settings.watermark.text.text);
+
       ctx.fillText(
         settings.watermark.text.text,
         positionX,
@@ -276,6 +299,7 @@ export const expandImage = (
       // **1. Setup OffscreenCanvas for image manipulation**
       const canvas = new OffscreenCanvas(settings.width, settings.height);
       const ctx = canvas.getContext("2d");
+
       if (!ctx) throw new Error("Failed to get canvas context");
 
       // **2. Load the image using createImageBitmap**
@@ -325,6 +349,7 @@ export const expandImage = (
           const y1 = height / 2 + (Math.sin(angle) * diagonal) / 2;
 
           const gradient = ctx.createLinearGradient(x0, y0, x1, y1);
+
           gradient.addColorStop(0, start);
           gradient.addColorStop(1, end);
           ctx.fillStyle = gradient;
@@ -357,6 +382,7 @@ export const expandImage = (
         let bgY = 0;
         const imgRatio = bgImage.width / bgImage.height;
         const canvasRatio = width / height;
+
         if (fit === "fit") {
           if (imgRatio > canvasRatio) {
             bgWidth = width;
@@ -396,6 +422,7 @@ export const expandImage = (
       const borderRadius =
         (Math.min(scaledWidth, scaledHeight) / 2) *
         (settings.border.radius / 100);
+
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(x + borderRadius, y);
@@ -438,6 +465,7 @@ export const expandImage = (
       if (isPreview) {
         const previewCanvas = new OffscreenCanvas(400, 400);
         const previewCtx = previewCanvas.getContext("2d");
+
         if (!previewCtx)
           throw new Error("Failed to get preview canvas context");
 
@@ -470,6 +498,7 @@ export const expandImage = (
         const previewBlobOutput = await previewCanvas.convertToBlob({
           type: "image/png",
         });
+
         resolve(URL.createObjectURL(previewBlobOutput));
       } else {
         resolve(fullSizeDataURL);
@@ -515,6 +544,7 @@ export const generateCropped = (
 
       const canvas = new OffscreenCanvas(targetWidth, targetHeight);
       const ctx = canvas.getContext("2d");
+
       if (!ctx) throw new Error("Failed to get canvas context");
 
       // Handle background fill options
@@ -539,6 +569,7 @@ export const generateCropped = (
       const borderRadius =
         (Math.min(scaledWidth, scaledHeight) / 2) *
         (settings.border.radius / 100);
+
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(offsetX + borderRadius, offsetY);
@@ -588,6 +619,7 @@ export const generateCropped = (
 
       // Generate blob URL and resolve the promise
       const croppedBlob = await canvas.convertToBlob({ type: "image/png" });
+
       resolve(URL.createObjectURL(croppedBlob));
     } catch (error) {
       reject(error);
@@ -603,6 +635,7 @@ export const downloadSingleImage = async (
   const extension = settings.download.format;
   const fileName = `picExpert.net_${file.baseName}`;
   let fileNameWithExtension = `${fileName}.${extension}`;
+
   fetch(blobUrl)
     .then((res) => res.blob())
     .then((blob) => {
@@ -617,10 +650,12 @@ export const downloadZip = async (
   const zip = new JSZip();
   let zipName = `picExpert.net_${settings.width * settings.download.quality}x${settings.height * settings.download.quality}`;
   const folder = zip.folder(zipName);
+
   if (!folder) return;
 
   const promises = files.map(async (file, index) => {
     let blobUrl = "";
+
     if (settings.mode === "expand") {
       blobUrl = file.generatedImage;
     } else {
@@ -648,6 +683,7 @@ export const downloadZip = async (
 export const saveAs = (blob: Blob, fileName: string) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
+
   link.href = url;
   link.download = fileName;
   link.click();
@@ -656,5 +692,6 @@ export const saveAs = (blob: Blob, fileName: string) => {
 export const randNumber = (chars: number): number => {
   const min = Math.pow(10, chars - 1);
   const max = Math.pow(10, chars) - 1;
+
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };

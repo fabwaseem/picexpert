@@ -1,20 +1,4 @@
 "use client";
-import { socialMediaRatios } from "@/config/socialRatios";
-import {
-  calculateAspectRatio,
-  calculateDimensions,
-  cn,
-  convertToDetailedFile,
-  downloadSingleImage,
-  downloadZip,
-  getAspectRatio,
-  isSupported,
-} from "@/lib/utils";
-import { useAppDispatch, useAppSelector } from "@/store";
-import { addFiles } from "@/store/slices/FilesSlice";
-import { updateSetting } from "@/store/slices/settingsSlice";
-import { DetailedFile, Scalling, SettingsProps } from "@/types";
-import { setupWorker } from "@/workers/setup";
 import {
   Button,
   Card,
@@ -40,6 +24,8 @@ import Image from "next/image";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import Dropzone, { useDropzone } from "react-dropzone";
 import validateColor from "validate-color";
+import { useTheme } from "next-themes";
+
 import AngleSelector from "../AngleSelector";
 import DraggableWatermarkSelector from "../DraggableWatermarkSelector";
 import {
@@ -54,9 +40,9 @@ import {
   DownloadIcon,
   ExpandIcon,
   ExportSettingIcon,
-  FeedbackIcon,
   ImageIcon,
   Logo,
+  LogoDark,
   OpacityHighIcon,
   OpacityLowIcon,
   PlusRoundIcon,
@@ -67,10 +53,28 @@ import {
   SizeSmallIcon,
   TextIcon,
 } from "../icons";
+
 import ColorPicker from "./ColorPicker";
 import FeedbackModal from "./FeedbackModal";
 import { GradientPicker } from "./GradientPicker";
 import SettingsModal from "./SettingsModal";
+
+import { setupWorker } from "@/workers/setup";
+import { DetailedFile, Scalling, SettingsProps } from "@/types";
+import { updateSetting } from "@/store/slices/settingsSlice";
+import { addFiles } from "@/store/slices/FilesSlice";
+import { useAppDispatch, useAppSelector } from "@/store";
+import {
+  calculateAspectRatio,
+  calculateDimensions,
+  cn,
+  convertToDetailedFile,
+  downloadSingleImage,
+  downloadZip,
+  getAspectRatio,
+  isSupported,
+} from "@/lib/utils";
+import { socialMediaRatios } from "@/config/socialRatios";
 
 const Sidebar = () => {
   const settings = useAppSelector((state) => state.settings);
@@ -92,6 +96,9 @@ const Sidebar = () => {
     socialMediaRatios.find((item) => item.id === selectSocialRatioTab)
       ?.ratios[0],
   );
+  const [recentCustomSizes, setRecentCustomSizes] = useState<
+    { label: string; ratio: number; width: number; height: number }[]
+  >([]);
   const [sidebarActiveMobile, setSidebarActiveMobile] =
     useState<boolean>(false);
   const {
@@ -122,6 +129,7 @@ const Sidebar = () => {
   const skipEffect = useRef(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const settingsRef = useRef<SettingsProps>(settings);
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     settingsRef.current = settings;
@@ -130,9 +138,11 @@ const Sidebar = () => {
   const onDropFiles = useCallback(
     async (acceptedFiles: File[]) => {
       const filesToAdd: DetailedFile[] = [];
+
       for (let i = 0; i < acceptedFiles.length; i++) {
         if (isSupported(acceptedFiles[i])) {
           let file = await convertToDetailedFile(acceptedFiles[i]);
+
           if (file) {
             filesToAdd.push(file);
           }
@@ -160,6 +170,48 @@ const Sidebar = () => {
     () => setupWorker(handleDownload, setIsLoading, skipEffect, workerRef),
     [],
   );
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("picexpert.customSizes");
+
+      if (raw) {
+        const parsed = JSON.parse(raw) as {
+          label: string;
+          ratio: number;
+          width: number;
+          height: number;
+        }[];
+
+        setRecentCustomSizes(parsed.slice(0, 5));
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const saveRecentCustomSize = (width: number, height: number) => {
+    try {
+      const ratio = calculateAspectRatio(width, height);
+      const label = `Custom - ${getAspectRatio(width, height)}`;
+      const raw = localStorage.getItem("picexpert.customSizes");
+      const existing: {
+        label: string;
+        ratio: number;
+        width: number;
+        height: number;
+      }[] = raw ? JSON.parse(raw) : [];
+      const deduped = [
+        { label, ratio, width, height },
+        ...existing.filter((r) => !(r.width === width && r.height === height)),
+      ].slice(0, 5);
+
+      localStorage.setItem("picexpert.customSizes", JSON.stringify(deduped));
+      setRecentCustomSizes(deduped);
+    } catch {
+      /* ignore */
+    }
+  };
 
   const handleDownload = async (files: DetailedFile[]) => {
     if (files.length === 1) {
@@ -197,6 +249,7 @@ const Sidebar = () => {
         aspectRatio: selectedRatio?.ratio,
       }),
     );
+    saveRecentCustomSize(customDimentions.width, customDimentions.height);
     setIsOpenSocialSizeDropdown(false);
     setSelectedRatio({
       label: `Custom - ${getAspectRatio(
@@ -216,7 +269,11 @@ const Sidebar = () => {
           <CardBody className="p-2 ">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1 relative">
-                <Logo />
+                {resolvedTheme === "dark" ? (
+                  <Logo size={24} />
+                ) : (
+                  <LogoDark size={24} />
+                )}
                 <h4 className="text-lg font-semibold">picExpert</h4>
               </div>
               <div className="flex items-center">
@@ -224,15 +281,15 @@ const Sidebar = () => {
                   <>
                     <input {...getAddFilesInputProps()} />
                     <Tooltip
+                      showArrow
                       content="Add more images"
                       delay={1000}
-                      showArrow
                       radius="sm"
                     >
                       <Button
                         isIconOnly
-                        color="default"
                         aria-label="Add more images"
+                        color="default"
                         size="sm"
                         variant="light"
                         onPress={openAddFiles}
@@ -242,28 +299,28 @@ const Sidebar = () => {
                     </Tooltip>
                   </>
                 )}
-                <Tooltip
+                {/* <Tooltip
+                  showArrow
                   content="Send Feedback"
                   delay={1000}
-                  showArrow
                   radius="sm"
                 >
                   <Button
                     isIconOnly
-                    color="default"
                     aria-label="Send Feedback"
+                    color="default"
                     size="sm"
                     variant="light"
                     onPress={onOpenFeedbackModal}
                   >
                     <FeedbackIcon size={20} />
                   </Button>
-                </Tooltip>
-                <Tooltip content="App Menu" delay={1000} showArrow radius="sm">
+                </Tooltip> */}
+                <Tooltip showArrow content="App Menu" delay={1000} radius="sm">
                   <Button
                     isIconOnly
+                    aria-label="App Menu"
                     color="default"
-                    aria-label="Send Feedback"
                     size="sm"
                     variant="light"
                     onPress={onOpenSettingsModal}
@@ -271,16 +328,16 @@ const Sidebar = () => {
                     <AppMenuIcon size={20} />
                   </Button>
                 </Tooltip>
-                <Tooltip content="Settings" delay={1000} showArrow radius="sm">
+                <Tooltip showArrow content="Settings" delay={1000} radius="sm">
                   <Button
+                    ref={sidebarMenuBtnRef}
                     isIconOnly
-                    color="default"
                     aria-label="Send Feedback"
+                    className="md:hidden"
+                    color="default"
                     size="sm"
                     variant="light"
                     onPress={() => setSidebarActiveMobile(!sidebarActiveMobile)}
-                    className="md:hidden"
-                    ref={sidebarMenuBtnRef}
                   >
                     <SettingIcon size={28} />
                   </Button>
@@ -290,16 +347,23 @@ const Sidebar = () => {
           </CardBody>
         </Card>
         <Card
+          ref={sidebarMenuRef}
           className={cn(
             "flex-1 max-md:fixed  max-md:bottom-1  max-md:left-1  max-md:w-[calc(100%-8px)] transition-transform max-md:z-20",
             sidebarActiveMobile ? "translate-y-0" : "max-md:translate-y-full",
           )}
-          ref={sidebarMenuRef}
         >
           <CardBody className="p-2 flex flex-col gap-1">
             <Tabs
+              fullWidth
               aria-label="Resize Method"
+              classNames={{
+                tabList: "px-0 ",
+              }}
               defaultSelectedKey={settings.mode}
+              radius="sm"
+              size="lg"
+              variant="light"
               onSelectionChange={(key) => {
                 if (key !== settings.mode) {
                   dispatch(
@@ -309,13 +373,6 @@ const Sidebar = () => {
                   );
                 }
               }}
-              fullWidth
-              radius="sm"
-              variant="light"
-              classNames={{
-                tabList: "px-0 ",
-              }}
-              size="lg"
             >
               <Tab
                 key="expand"
@@ -325,7 +382,7 @@ const Sidebar = () => {
                     <span className=" font-semibold">Expand</span>
                   </div>
                 }
-              ></Tab>
+              />
               <Tab
                 key="crop"
                 title={
@@ -334,19 +391,19 @@ const Sidebar = () => {
                     <span className=" font-semibold">Crop</span>
                   </div>
                 }
-              ></Tab>
+              />
             </Tabs>
 
             <Dropdown
               // backdrop="blur"
-              onOpenChange={(open) => setIsOpenSocialSizeDropdown(open)}
               isOpen={isOpenSocialSizeDropdown}
+              onOpenChange={(open) => setIsOpenSocialSizeDropdown(open)}
             >
               <DropdownTrigger>
                 <Button
-                  variant="flat"
                   className="justify-between text-left h-[50px]"
                   radius="sm"
+                  variant="flat"
                 >
                   <div className="flex items-center gap-2 justify-start ">
                     <div className="py-1 w-10 flex items-center justify-center">
@@ -358,11 +415,11 @@ const Sidebar = () => {
                         }}
                       >
                         <Image
-                          src={"/images/preview.jpg"}
-                          alt={selectedRatio?.label + ""}
                           fill
-                          sizes="200px"
+                          alt={selectedRatio?.label + ""}
                           className="object-cover rounded-sm"
+                          sizes="200px"
+                          src={"/images/preview.jpg"}
                         />
                       </div>
                     </div>
@@ -374,11 +431,11 @@ const Sidebar = () => {
                     </div>
                   </div>
                   <ChevronDownIcon
-                    size={14}
                     className={cn(
                       "opacity-50 transition-transform ",
                       isOpenSocialSizeDropdown ? "transform rotate-180" : "",
                     )}
+                    size={14}
                   />
                 </Button>
               </DropdownTrigger>
@@ -391,26 +448,49 @@ const Sidebar = () => {
                     <form className="flex gap-2" onSubmit={handleSubmit}>
                       <div>
                         <Input
-                          id="width"
-                          type="number"
                           aria-label="images width"
+                          className="!text-right ml-auto"
+                          endContent={
+                            <span className="text-default-400 text-xs">px</span>
+                          }
+                          id="width"
+                          placeholder={selectedRatio?.width + ""}
+                          radius="sm"
+                          size="lg"
+                          startContent={
+                            <span className="text-default-400 text-sm font-medium ">
+                              W
+                            </span>
+                          }
+                          type="number"
                           value={
                             customDimentions?.width === 0
                               ? ""
                               : customDimentions?.width + ""
                           }
-                          placeholder={selectedRatio?.width + ""}
                           onValueChange={(e) => {
                             let value = parseInt(e);
+
                             if (value < 0 || isNaN(value)) {
                               value = 0;
                             }
-                            let height = settings.height;
+                            let baseHeight =
+                              customDimentions.height > 0
+                                ? customDimentions.height
+                                : settings.height;
                             let aspectRatio = settings.aspectRatio;
+                            let height = baseHeight;
+
                             if (settings.lockRatio) {
-                              height = Math.round(value / aspectRatio);
+                              height = Math.max(
+                                0,
+                                Math.round(value / aspectRatio),
+                              );
                             } else {
-                              aspectRatio = calculateAspectRatio(value, height);
+                              aspectRatio = calculateAspectRatio(
+                                value,
+                                baseHeight,
+                              );
                             }
                             setCustomDimentions({
                               width: value,
@@ -424,41 +504,53 @@ const Sidebar = () => {
                               ratio: aspectRatio,
                             });
                           }}
-                          startContent={
-                            <span className="text-default-400 text-sm font-medium ">
-                              W
-                            </span>
-                          }
-                          endContent={
-                            <span className="text-default-400 text-xs">px</span>
-                          }
-                          radius="sm"
-                          size="lg"
-                          className="!text-right ml-auto"
                         />
                       </div>
                       <div>
                         <Input
-                          id="height"
-                          type="number"
                           aria-label="images height"
+                          className="!text-right ml-auto"
+                          endContent={
+                            <span className="text-default-400 text-xs">px</span>
+                          }
+                          id="height"
+                          placeholder={selectedRatio?.height + ""}
+                          radius="sm"
+                          size="lg"
+                          startContent={
+                            <span className="text-default-400 text-sm font-medium ">
+                              H
+                            </span>
+                          }
+                          type="number"
                           value={
                             customDimentions?.height === 0
                               ? ""
                               : customDimentions?.height + ""
                           }
-                          placeholder={selectedRatio?.height + ""}
                           onValueChange={(e) => {
                             let value = parseInt(e);
+
                             if (value < 0 || isNaN(value)) {
                               value = 0;
                             }
-                            let width = settings.width;
+                            let baseWidth =
+                              customDimentions.width > 0
+                                ? customDimentions.width
+                                : settings.width;
                             let aspectRatio = settings.aspectRatio;
+                            let width = baseWidth;
+
                             if (settings.lockRatio) {
-                              width = Math.round(value * aspectRatio);
+                              width = Math.max(
+                                0,
+                                Math.round(value * aspectRatio),
+                              );
                             } else {
-                              aspectRatio = calculateAspectRatio(width, value);
+                              aspectRatio = calculateAspectRatio(
+                                baseWidth,
+                                value,
+                              );
                             }
                             setCustomDimentions({
                               height: value,
@@ -472,45 +564,32 @@ const Sidebar = () => {
                               ratio: aspectRatio,
                             });
                           }}
-                          startContent={
-                            <span className="text-default-400 text-sm font-medium ">
-                              H
-                            </span>
-                          }
-                          endContent={
-                            <span className="text-default-400 text-xs">px</span>
-                          }
-                          radius="sm"
-                          size="lg"
-                          className="!text-right ml-auto"
                         />
                       </div>
                       <Button
-                        variant="bordered"
-                        size="lg"
                         isIconOnly
+                        size="lg"
                         type="submit"
+                        variant="bordered"
                       >
                         Set
                       </Button>
                     </form>
                   )}
-                  <h6 className="font-semibold text-2xs uppercase opacity-50 tracking-wider mt-4">
-                    Social media
-                  </h6>
+
                   <Tabs
                     aria-label="Resize Method"
-                    defaultSelectedKey={selectSocialRatioTab}
-                    onSelectionChange={(key) =>
-                      setSelectSocialRatioTab(key as string)
-                    }
-                    radius="sm"
-                    variant="light"
-                    items={socialMediaRatios}
                     className="md:max-w-xl "
                     classNames={{
                       tabList: "overflow-auto ",
                     }}
+                    defaultSelectedKey={selectSocialRatioTab}
+                    items={socialMediaRatios}
+                    radius="sm"
+                    variant="light"
+                    onSelectionChange={(key) =>
+                      setSelectSocialRatioTab(key as string)
+                    }
                   >
                     {(item) => (
                       <Tab
@@ -523,60 +602,119 @@ const Sidebar = () => {
                             <item.icon className="md:hidden" />
                           </>
                         }
-                      ></Tab>
+                      />
                     )}
                   </Tabs>
                   <Divider className="my-2" />
                   <ScrollShadow hideScrollBar>
-                    <div className="h-[calc(50vh-160px)] md:h-[calc(70vh-160px)] grid grid-cols-1 md:grid-cols-2  gap-3 p-3 ">
-                      {socialMediaRatios
-                        .find((item) => item.id === selectSocialRatioTab)
-                        ?.ratios.map((ratio, index) => (
-                          <button
-                            key={index}
-                            className={cn(
-                              "flex flex-col items-stretch p-3 rounded-xl  bg-content2/50 hover:bg-content2/75 transition-colors ",
-                              selectedRatio?.label === ratio.label
-                                ? "bg-content2/100 outline outline-1 outline-offset-3"
-                                : "",
-                            )}
-                            onClick={() => {
-                              setSelectedRatio(ratio);
-                              setIsOpenSocialSizeDropdown(false);
-                              dispatch(
-                                updateSetting({
-                                  width: ratio.width,
-                                  height: ratio.height,
-                                  aspectRatio: ratio.ratio,
-                                }),
-                              );
-                            }}
-                          >
-                            <div className="p-1.5 text-left">
-                              <h6 className="font-semibold">{ratio.label}</h6>
-                              <p className=" opacity-50">
-                                {ratio.width}x{ratio.height} ({ratio.ratio})
-                              </p>
+                    <div className="h-[calc(50vh-160px)] md:h-[calc(70vh-160px)] p-3 space-y-4">
+                      {selectSocialRatioTab === "custom" &&
+                        recentCustomSizes.length > 0 && (
+                          <div>
+                            <h6 className="font-semibold text-2xs uppercase opacity-50 tracking-wider mb-2">
+                              Recent
+                            </h6>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {recentCustomSizes.map((ratio, index) => (
+                                <button
+                                  key={`recent-${index}`}
+                                  className={cn(
+                                    "flex flex-col items-stretch p-3 rounded-xl  bg-content2/50 hover:bg-content2/75 transition-colors ",
+                                  )}
+                                  onClick={() => {
+                                    setSelectedRatio(ratio);
+                                    setIsOpenSocialSizeDropdown(false);
+                                    dispatch(
+                                      updateSetting({
+                                        width: ratio.width,
+                                        height: ratio.height,
+                                        aspectRatio: ratio.ratio,
+                                      }),
+                                    );
+                                  }}
+                                >
+                                  <div className="p-1.5 text-left">
+                                    <h6 className="font-semibold">
+                                      {ratio.label}
+                                    </h6>
+                                    <p className=" opacity-50">
+                                      {ratio.width}x{ratio.height} (
+                                      {ratio.ratio})
+                                    </p>
+                                  </div>
+                                  <div className="relative flex-1 min-h-20 flex items-center justify-center">
+                                    <div
+                                      className="relative"
+                                      style={{
+                                        width: `${calculateDimensions(ratio).width}px`,
+                                        height: `${calculateDimensions(ratio).height}px`,
+                                      }}
+                                    >
+                                      <Image
+                                        fill
+                                        alt={ratio.label}
+                                        className="object-cover rounded"
+                                        sizes="500px"
+                                        src={"/images/preview.jpg"}
+                                      />
+                                    </div>
+                                  </div>
+                                </button>
+                              ))}
                             </div>
-                            <div className="relative flex-1 min-h-20 flex items-center justify-center">
-                              <div
-                                className="relative"
-                                style={{
-                                  width: `${calculateDimensions(ratio).width}px`,
-                                  height: `${calculateDimensions(ratio).height}px`,
-                                }}
-                              >
-                                <Image
-                                  src={"/images/preview.jpg"}
-                                  alt={ratio.label}
-                                  fill
-                                  sizes="500px"
-                                  className="object-cover rounded"
-                                />
+                          </div>
+                        )}
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {socialMediaRatios
+                          .find((item) => item.id === selectSocialRatioTab)
+                          ?.ratios.map((ratio, index) => (
+                            <button
+                              key={index}
+                              className={cn(
+                                "flex flex-col items-stretch p-3 rounded-xl  bg-content2/50 hover:bg-content2/75 transition-colors ",
+                                selectedRatio?.label === ratio.label
+                                  ? "bg-content2/100 outline outline-1 outline-offset-3"
+                                  : "",
+                              )}
+                              onClick={() => {
+                                setSelectedRatio(ratio);
+                                setIsOpenSocialSizeDropdown(false);
+                                dispatch(
+                                  updateSetting({
+                                    width: ratio.width,
+                                    height: ratio.height,
+                                    aspectRatio: ratio.ratio,
+                                  }),
+                                );
+                              }}
+                            >
+                              <div className="p-1.5 text-left">
+                                <h6 className="font-semibold">{ratio.label}</h6>
+                                <p className=" opacity-50">
+                                  {ratio.width}x{ratio.height} ({ratio.ratio})
+                                </p>
                               </div>
-                            </div>
-                          </button>
-                        ))}
+                              <div className="relative flex-1 min-h-20 flex items-center justify-center">
+                                <div
+                                  className="relative"
+                                  style={{
+                                    width: `${calculateDimensions(ratio).width}px`,
+                                    height: `${calculateDimensions(ratio).height}px`,
+                                  }}
+                                >
+                                  <Image
+                                    fill
+                                    alt={ratio.label}
+                                    className="object-cover rounded"
+                                    sizes="500px"
+                                    src={"/images/preview.jpg"}
+                                  />
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                      </div>
                     </div>
                   </ScrollShadow>
                 </DropdownItem>
@@ -587,6 +725,10 @@ const Sidebar = () => {
                 {settings.mode === "crop" && (
                   <div>
                     <Checkbox
+                      className="mt-1"
+                      classNames={{
+                        label: "text-sm opacity-60",
+                      }}
                       isSelected={settings.customCrop}
                       onValueChange={(value) =>
                         dispatch(
@@ -595,10 +737,6 @@ const Sidebar = () => {
                           }),
                         )
                       }
-                      className="mt-1"
-                      classNames={{
-                        label: "text-sm opacity-60",
-                      }}
                     >
                       Crop images individually
                     </Checkbox>
@@ -677,15 +815,15 @@ const Sidebar = () => {
                         <div className="w-6 h-6 relative flex items-center justify-center">
                           {settings.background.image.image ? (
                             <Image
-                              src={
-                                settings.background.image.image?.previewUrl + ""
-                              }
+                              fill
                               alt={
                                 settings.background.image.image?.baseName + ""
                               }
-                              fill
-                              sizes="200px"
                               className="object-cover rounded"
+                              sizes="200px"
+                              src={
+                                settings.background.image.image?.previewUrl + ""
+                              }
                             />
                           ) : (
                             <ImageIcon />
@@ -701,12 +839,22 @@ const Sidebar = () => {
                           blur strength
                         </h6>
                         <Slider
+                          aria-label="blur strength"
+                          defaultValue={settings.background.blurStrength}
+                          endContent={
+                            <div className="w-6 h-6 flex items-center justify-center">
+                              <BlurIcon size={20} />
+                            </div>
+                          }
                           maxValue={100}
                           minValue={0}
                           showTooltip={true}
                           size="sm"
-                          aria-label="blur strength"
-                          defaultValue={settings.background.blurStrength}
+                          startContent={
+                            <div className="w-6 h-6 flex items-center justify-center">
+                              <CircleIcon size={16} />
+                            </div>
+                          }
                           onChangeEnd={(value) =>
                             dispatch(
                               updateSetting({
@@ -718,16 +866,6 @@ const Sidebar = () => {
                               }),
                             )
                           }
-                          startContent={
-                            <div className="w-6 h-6 flex items-center justify-center">
-                              <CircleIcon size={16} />
-                            </div>
-                          }
-                          endContent={
-                            <div className="w-6 h-6 flex items-center justify-center">
-                              <BlurIcon size={20} />
-                            </div>
-                          }
                         />
                       </div>
                     )}
@@ -735,10 +873,10 @@ const Sidebar = () => {
                     {settings.background.type === "color" && (
                       <div className="mt-4 p-1 space-y-4">
                         <Tabs
-                          aria-label="Color Mode"
                           fullWidth
-                          size="sm"
+                          aria-label="Color Mode"
                           selectedKey={settings.background.color.mode}
+                          size="sm"
                           onSelectionChange={(key) =>
                             dispatch(
                               updateSetting({
@@ -764,13 +902,14 @@ const Sidebar = () => {
                             </h6>
                             <ColorPicker
                               inputId="bg-color"
-                              value={currentBgColor}
                               label="Color"
+                              value={currentBgColor}
                               onChange={(value) => {
                                 setCurrentBgColor(value);
                               }}
                               onChangeEnd={(value) => {
                                 const validColor = validateColor(value);
+
                                 validColor &&
                                   dispatch(
                                     updateSetting({
@@ -795,31 +934,12 @@ const Sidebar = () => {
                                 Gradient
                               </h6>
                               <GradientPicker
-                                startColor={gradientStart}
                                 endColor={gradientEnd}
-                                onStartChange={setGradientStart}
+                                startColor={gradientStart}
                                 onEndChange={setGradientEnd}
-                                onStartChangeEnd={(value) => {
-                                  const validColor = validateColor(value);
-                                  validColor &&
-                                    dispatch(
-                                      updateSetting({
-                                        background: {
-                                          ...settings.background,
-                                          color: {
-                                            ...settings.background.color,
-                                            gradient: {
-                                              ...settings.background.color
-                                                .gradient,
-                                              start: value,
-                                            },
-                                          },
-                                        },
-                                      }),
-                                    );
-                                }}
                                 onEndChangeEnd={(value) => {
                                   const validColor = validateColor(value);
+
                                   validColor &&
                                     dispatch(
                                       updateSetting({
@@ -837,6 +957,27 @@ const Sidebar = () => {
                                       }),
                                     );
                                 }}
+                                onStartChange={setGradientStart}
+                                onStartChangeEnd={(value) => {
+                                  const validColor = validateColor(value);
+
+                                  validColor &&
+                                    dispatch(
+                                      updateSetting({
+                                        background: {
+                                          ...settings.background,
+                                          color: {
+                                            ...settings.background.color,
+                                            gradient: {
+                                              ...settings.background.color
+                                                .gradient,
+                                              start: value,
+                                            },
+                                          },
+                                        },
+                                      }),
+                                    );
+                                }}
                               />
                             </div>
                             <div>
@@ -847,6 +988,7 @@ const Sidebar = () => {
                                 angle={
                                   settings.background.color.gradient.direction
                                 }
+                                label="Direction"
                                 setAngle={(angle) =>
                                   dispatch(
                                     updateSetting({
@@ -864,7 +1006,6 @@ const Sidebar = () => {
                                     }),
                                   )
                                 }
-                                label="Direction"
                               />
                             </div>
                           </div>
@@ -980,11 +1121,11 @@ const Sidebar = () => {
                                     }
                                   >
                                     <Image
-                                      src={image.previewUrl}
-                                      alt="history"
                                       fill
+                                      alt="history"
                                       className="object-cover"
                                       sizes="48px"
+                                      src={image.previewUrl}
                                     />
                                   </button>
                                 ),
@@ -1107,10 +1248,10 @@ const Sidebar = () => {
                   {settings.watermark.enabled && (
                     <div className="mt-4 mb-2">
                       <Tabs
-                        aria-label="Watermark Pattern"
                         fullWidth
-                        size="sm"
+                        aria-label="Watermark Pattern"
                         selectedKey={settings.watermark.pattern || "single"}
+                        size="sm"
                         onSelectionChange={(key) =>
                           dispatch(
                             updateSetting({
@@ -1132,6 +1273,7 @@ const Sidebar = () => {
                     settings.watermark.pattern === "repeat" && (
                       <AngleSelector
                         angle={settings.watermark.direction}
+                        label="Rotation"
                         setAngle={(angle) =>
                           dispatch(
                             updateSetting({
@@ -1142,7 +1284,6 @@ const Sidebar = () => {
                             }),
                           )
                         }
-                        label="Rotation"
                       />
                     )}
 
@@ -1154,6 +1295,7 @@ const Sidebar = () => {
                             const image = await convertToDetailedFile(
                               acceptedFiles[0],
                             );
+
                             image &&
                               dispatch(
                                 updateSetting({
@@ -1178,16 +1320,16 @@ const Sidebar = () => {
                                       {settings.watermark.image.image ? (
                                         <div className="relative w-full h-full flex items-center justify-center">
                                           <Image
-                                            src={
-                                              settings.watermark.image.image
-                                                .previewUrl
-                                            }
+                                            fill
                                             alt={
                                               settings.watermark.image.image
                                                 .baseName
                                             }
-                                            fill
                                             className="object-contain"
+                                            src={
+                                              settings.watermark.image.image
+                                                .previewUrl
+                                            }
                                           />
                                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold z-10">
                                             Change Image
@@ -1217,11 +1359,13 @@ const Sidebar = () => {
                     settings.watermark.type === "text" && (
                       <div className="mt-2 space-y-2">
                         <Input
-                          id="watermarkText"
-                          type="text"
                           aria-label="watermark text"
-                          value={settings.watermark.text.text}
+                          id="watermarkText"
+                          label="Text"
                           placeholder="Watermark Text"
+                          radius="sm"
+                          type="text"
+                          value={settings.watermark.text.text}
                           onValueChange={(value) =>
                             dispatch(
                               updateSetting({
@@ -1235,11 +1379,10 @@ const Sidebar = () => {
                               }),
                             )
                           }
-                          radius="sm"
-                          label="Text"
                         />
                         <ColorPicker
                           inputId="watermarkTextColor"
+                          label="Text Color"
                           value={settings.watermark.text.color}
                           onChange={(value) =>
                             dispatch(
@@ -1254,7 +1397,6 @@ const Sidebar = () => {
                               }),
                             )
                           }
-                          label="Text Color"
                         />
                       </div>
                     )}
@@ -1266,16 +1408,32 @@ const Sidebar = () => {
                           Opacity
                         </p>
                         <Slider
+                          aria-label="watermark opacity"
+                          defaultValue={settings.watermark.opacity}
+                          endContent={
+                            <div className="w-6 h-6 flex items-center justify-center">
+                              <OpacityHighIcon
+                                className="opacity-50"
+                                size={20}
+                              />
+                            </div>
+                          }
                           maxValue={1}
-                          step={0.1}
                           minValue={0.1}
+                          showTooltip={true}
+                          size="sm"
+                          startContent={
+                            <div className="w-6 h-6 flex items-center justify-center">
+                              <OpacityLowIcon
+                                className="opacity-50"
+                                size={20}
+                              />
+                            </div>
+                          }
+                          step={0.1}
                           tooltipValueFormatOptions={{
                             style: "percent",
                           }}
-                          showTooltip={true}
-                          size="sm"
-                          aria-label="watermark opacity"
-                          defaultValue={settings.watermark.opacity}
                           onChangeEnd={(value) =>
                             dispatch(
                               updateSetting({
@@ -1286,22 +1444,6 @@ const Sidebar = () => {
                               }),
                             )
                           }
-                          startContent={
-                            <div className="w-6 h-6 flex items-center justify-center">
-                              <OpacityLowIcon
-                                className="opacity-50"
-                                size={20}
-                              />
-                            </div>
-                          }
-                          endContent={
-                            <div className="w-6 h-6 flex items-center justify-center">
-                              <OpacityHighIcon
-                                className="opacity-50"
-                                size={20}
-                              />
-                            </div>
-                          }
                         />
                       </div>
                       <div className="mt-4">
@@ -1309,12 +1451,22 @@ const Sidebar = () => {
                           Size
                         </p>
                         <Slider
+                          aria-label="watermark size"
+                          defaultValue={settings.watermark.size}
+                          endContent={
+                            <div className="w-6 h-6 flex items-center justify-center">
+                              <SizeLargeIcon className="opacity-50" size={20} />
+                            </div>
+                          }
                           maxValue={100}
                           minValue={5}
                           showTooltip={true}
                           size="sm"
-                          aria-label="watermark size"
-                          defaultValue={settings.watermark.size}
+                          startContent={
+                            <div className="w-6 h-6 flex items-center justify-center">
+                              <SizeSmallIcon className="opacity-50" size={20} />
+                            </div>
+                          }
                           onChangeEnd={(value) =>
                             dispatch(
                               updateSetting({
@@ -1324,16 +1476,6 @@ const Sidebar = () => {
                                 },
                               }),
                             )
-                          }
-                          startContent={
-                            <div className="w-6 h-6 flex items-center justify-center">
-                              <SizeSmallIcon className="opacity-50" size={20} />
-                            </div>
-                          }
-                          endContent={
-                            <div className="w-6 h-6 flex items-center justify-center">
-                              <SizeLargeIcon className="opacity-50" size={20} />
-                            </div>
                           }
                         />
                       </div>
@@ -1350,12 +1492,18 @@ const Sidebar = () => {
                   </h6>
                   <div className="mt-2">
                     <Slider
+                      aria-label="border radius"
+                      endContent={
+                        <RoundIcon className="opacity-50" size={18} />
+                      }
+                      getValue={(v) => `${v}%`}
                       maxValue={100}
                       minValue={0}
                       showTooltip={true}
                       size="sm"
-                      getValue={(v) => `${v}%`}
-                      aria-label="border radius"
+                      startContent={
+                        <SharpIcon className="opacity-50" size={18} />
+                      }
                       value={currentRoundness}
                       onChange={(value) => setCurrentRoundness(value as number)}
                       onChangeEnd={(value) =>
@@ -1367,12 +1515,6 @@ const Sidebar = () => {
                             },
                           }),
                         )
-                      }
-                      startContent={
-                        <SharpIcon size={18} className="opacity-50" />
-                      }
-                      endContent={
-                        <RoundIcon size={18} className="opacity-50" />
                       }
                     />
                   </div>
@@ -1433,11 +1575,11 @@ const Sidebar = () => {
             </ScrollShadow>
             <div className="flex gap-2">
               <Button
-                size="lg"
                 className="w-full"
+                disabled={files.length === 0}
+                size="lg"
                 variant="faded"
                 onPress={callDownload}
-                disabled={files.length === 0}
               >
                 {isLoading ? (
                   <>
@@ -1462,8 +1604,8 @@ const Sidebar = () => {
                 <PopoverTrigger>
                   <Button
                     isIconOnly
-                    color="default"
                     aria-label="Export Settings"
+                    color="default"
                     size="lg"
                     variant="faded"
                   >
@@ -1478,8 +1620,12 @@ const Sidebar = () => {
                         image format
                       </h6>
                       <Tabs
+                        fullWidth
                         aria-label="Image format"
                         defaultSelectedKey={settings.download.quality}
+                        radius="sm"
+                        size="lg"
+                        variant="solid"
                         onSelectionChange={(key) => {
                           if (key !== settings.download.quality) {
                             dispatch(
@@ -1492,23 +1638,19 @@ const Sidebar = () => {
                             );
                           }
                         }}
-                        fullWidth
-                        radius="sm"
-                        variant="solid"
-                        size="lg"
                       >
                         <Tab
                           key="jpg"
                           title={
                             <span className="text-sm font-semibold">JPG</span>
                           }
-                        ></Tab>
+                        />
                         <Tab
                           key="png"
                           title={
                             <span className="text-sm font-semibold">PNG</span>
                           }
-                        ></Tab>
+                        />
                       </Tabs>
                     </div>
                     <div className="mt-2">
@@ -1561,7 +1703,7 @@ const Sidebar = () => {
           <div
             className="flex w-screen h-[100dvh] fixed inset-0 z-10 opacity-40 bg-background md:hidden"
             onClick={() => setSidebarActiveMobile(false)}
-          ></div>
+          />
         )}
       </div>
 
