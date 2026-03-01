@@ -1344,56 +1344,6 @@ const Sidebar = () => {
                   )}
                 </div>
 
-                {/* <div>
-                  <h6 className="font-semibold text-2xs uppercase opacity-50 tracking-wider">
-                    style
-                  </h6>
-                  <div className="grid grid-cols-3 gap-3 mt-2 px-1">
-                    {styles.map((style, index) => (
-                      <div
-                        key={index}
-                        className="text-center cursor-pointer"
-                        onClick={() =>
-                          dispatch(
-                            updateSetting({
-                              border: {
-                                ...settings.border,
-                                style: style.value as
-                                  | "default"
-                                  | "stack"
-                                  | "retro"
-                                  | "border"
-                                  | "glass-light"
-                                  | "glass-dark",
-                              },
-                            })
-                          )
-                        }
-                      >
-                        <div
-                          className={cn(
-                            "relative h-16 rounded-lg",
-                            settings.border.style === style.value
-                              ? "outline outline-1 outline-offset-3"
-                              : ""
-                          )}
-                        >
-                          <Image
-                            src={style.image}
-                            fill
-                            sizes="200px"
-                            alt={style.label}
-                            className="rounded-lg"
-                          />
-                        </div>
-                        <p className="text-3xs uppercase opacity-50 tracking-wider mt-2">
-                          {style.label}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div> */}
-
                 <div>
                   <h6 className="font-semibold text-2xs uppercase opacity-50 tracking-wider">
                     roundness
